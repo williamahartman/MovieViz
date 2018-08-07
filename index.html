@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+
+<link rel="stylesheet" type="text/css" href="solarized-dark.css" />
+
+<style>
+  div.tooltip {
+    position: absolute;
+    width: 320px;
+    text-align: left;
+    padding: 7px;
+    font: 10px sans-serif;
+    line-height: 1.6;
+    background: #002b36;
+    border: 2px;
+    pointer-events: none;
+  }
+
+  .xaxis line{
+    stroke: #586e75;
+  }
+
+  .xaxis path{
+    stroke: #586e75;
+  }
+
+  .xaxis text{
+    fill: #93a1a1ed;
+  }  
+
+  .yaxis line{
+    stroke: #586e75;
+  }
+
+  .yaxis path{
+    stroke: #586e75;
+  }
+
+  .yaxis text{
+    fill: #93a1a1ed;
+  }  
+</style>
+
+<script src="https://d3js.org/d3.v5.js"></script>
+<script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js'></script>
+
+<body style="margin-bottom: 250px;">
+  <div style="margin-top: 50px; margin-bottom: 100px;">
+    <h1>Movies by Day</h1>
+    <p style="font-size:0.75em">
+      Premium showings (3D, IMAX, 70mm, large format) have round icons.<br>
+    </p>
+    <table style="width: 100%; font-size:0.75em; text-align: left;">
+      <tr>
+        <td><span style="color:#586e75; font-size:1.5em">■</span> - Bought tickets like normal</td>
+        <td><span style="color:#859900; font-size:1.5em">■</span> - Free tickets (passes, gifts, etc)</td>
+        <td><span style="color:#b58900; font-size:1.5em">■</span> - Free tickets from Sarah's job</td>
+      </tr>
+      <tr>
+        <td><span style="color:#6c71c4; font-size:1.5em">■</span> - Snuck in 😈</td>
+        <td><span style="color:#d33682; font-size:1.5em">■</span> - Bought tickets with MoviePass</td>
+        <td><span style="color:#2aa198; font-size:1.5em">■</span> - Bought tickets with Sinema</td>
+      </tr>
+    </table>
+    <div id="calendar-graph"></div>
+  </div>
+
+  <div style="margin-top: 50px; margin-bottom: 100px;">
+    <h1>Distance Between Release Date and View Date</h1>
+    <p style="font-size:0.75em">
+      Only first run movies are shown. Bars are layered for movies that were viewed more than once. 
+      Movies that were viewed more than a week before their release date (as listed on IMDB) are 
+      still shown on the very top  of the graph. Movies with a very large gap are allowed to go 
+      off the chart. <br>
+    </p>
+    <table style="width: 100%; font-size:0.75em; text-align: left;">
+      <tr>
+        <td><span style="color:#586e75; font-size:1.5em">■</span> - Bought tickets like normal</td>
+        <td><span style="color:#859900; font-size:1.5em">■</span> - Free tickets (passes, gifts, etc)</td>
+        <td><span style="color:#b58900; font-size:1.5em">■</span> - Free tickets from Sarah's job</td>
+      </tr>
+      <tr>
+        <td><span style="color:#6c71c4; font-size:1.5em">■</span> - Snuck in 😈</td>
+        <td><span style="color:#d33682; font-size:1.5em">■</span> - Bought tickets with MoviePass</td>
+        <td><span style="color:#2aa198; font-size:1.5em">■</span> - Bought tickets with Sinema</td>
+      </tr>
+    </table>
+    <svg id="date-diff-graph"></svg>
+  </div>
+
+  <div style="margin-top: 50px; margin-bottom: 100px;">
+      <h1>Theater Counts</h1>
+      <p style="font-size:0.75em">
+        All theaters are shown, but no distinction is made between premium/non-premium screenings. <br>
+      </p>
+      <table style="width: 100%; font-size:0.75em; text-align: left;">
+        <tr>
+          <td><span style="color:#586e75; font-size:1.5em">■</span> - Bought tickets like normal</td>
+          <td><span style="color:#859900; font-size:1.5em">■</span> - Free tickets (passes, gifts, etc)</td>
+          <td><span style="color:#b58900; font-size:1.5em">■</span> - Free tickets from Sarah's job</td>
+        </tr>
+        <tr>
+          <td><span style="color:#6c71c4; font-size:1.5em">■</span> - Snuck in 😈</td>
+          <td><span style="color:#d33682; font-size:1.5em">■</span> - Bought tickets with MoviePass</td>
+          <td><span style="color:#2aa198; font-size:1.5em">■</span> - Bought tickets with Sinema</td>
+        </tr>
+      </table>
+      <svg id="theater-graph"></svg>
+    </div>
+
+  <script src="charts.js"></script>
+</body>
+
