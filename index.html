@@ -47,6 +47,10 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js'></script>
 
 <body style="margin-bottom: 250px;">
+  <div id="text-stats" style="margin-top: 50px; margin-bottom: 75px;">
+    <h1>General Statistics</h1>
+  </div>
+
   <div style="margin-top: 50px; margin-bottom: 100px;">
     <h1>Movies by Day</h1>
     <p style="font-size:0.75em">
@@ -71,9 +75,8 @@
     <h1>Distance Between Release Date and View Date</h1>
     <p style="font-size:0.75em">
       Only first run movies are shown. Bars are layered for movies that were viewed more than once. 
-      Movies that were viewed more than a week before their release date (as listed on IMDB) are 
-      still shown on the very top  of the graph. Movies with a very large gap are allowed to go 
-      off the chart. <br>
+      Movies with a very large gap (usually because of bad data on IMDb...) are allowed to go off 
+      the chart on either side. <br>
     </p>
     <table style="width: 100%; font-size:0.75em; text-align: left;">
       <tr>
@@ -90,10 +93,11 @@
     <svg id="date-diff-graph"></svg>
   </div>
 
-  <div style="margin-top: 50px; margin-bottom: 100px;">
-      <h1>Theater Counts</h1>
+  <div style="margin-top: 50px; margin-bottom: 50px;">
+      <h1>Theater Visits by Service</h1>
       <p style="font-size:0.75em">
-        All theaters are shown, but no distinction is made between premium/non-premium screenings. <br>
+        All theaters and services are shown, but no distinction is made between premium and 
+        non-premium screenings.<br>
       </p>
       <table style="width: 100%; font-size:0.75em; text-align: left;">
         <tr>
@@ -110,6 +114,16 @@
       <svg id="theater-graph"></svg>
     </div>
 
+    <div style="margin-top: 50px; margin-bottom: 50px;">
+      <h1>Sinema Profitability</h1>
+      <svg id="sinema-profit-graph"></svg>
+    </div>
+
+    <div style="margin-top: 50px; margin-bottom: 50px;">
+      <h1>MoviePass Profitability</h1>
+      <svg id="moviepass-profit-graph"></svg>
+    </div>
+    
   <script src="charts.js"></script>
 </body>
 
