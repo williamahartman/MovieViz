@@ -58,11 +58,11 @@ function drawTextStats(data, id) {
         "</tr>" + 
         "<tr>" + 
           "<td style=\"color:#859900;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Free Tickets").length + "</td>" +
-          "<td style=\"padding-left:15px;\">free tickets (passes from projector issues, work events, etc.)</td>" +
+          "<td style=\"padding-left:15px;\">free tickets (passes, promotions, etc.)</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Free Tickets (Cognex)").length + "</td>" +
-          "<td style=\"padding-left:15px;\">tickets from Sarah's job</td>" +
+          "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Gift").length + "</td>" +
+          "<td style=\"padding-left:15px;\">tickets received as gifts</td>" +
         "</tr>" + 
         "<tr>" + 
           "<td style=\"color:#6c71c4;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Accidental Scam").length + "</td>" +
