@@ -16,10 +16,12 @@
   }
 
   .xaxis line{
+    stroke-width: 0.5px;
     stroke: #586e75;
   }
 
   .xaxis path{
+    stroke-width: 0.5px;
     stroke: #586e75;
   }
 
@@ -28,16 +30,23 @@
   }  
 
   .yaxis line{
+    stroke-width: 0.5px;
     stroke: #586e75;
   }
 
   .yaxis path{
+    stroke-width: 0.5px;
     stroke: #586e75;
   }
 
   .yaxis text{
     fill: #93a1a1ed;
-  }  
+  }
+
+  .tick line {
+    stroke-width: 0.5px;
+    stroke: #586e75;
+  }
 </style>
 
 <script src="https://d3js.org/d3.v5.js"></script>
@@ -50,18 +59,18 @@
     <h1>General Statistics</h1>
   </div>
 
-  <div style="margin-top: 50px; margin-bottom: 100px;">
+  <div style="margin-top: 50px; margin-bottom: 75px;">
     <h1>Movies by Day</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, gifts, etc)</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Free tickets from Sarah's job</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
       </tr>
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc)</td>
       </tr>
     </table>
     <div id="calendar-graph"></div>
@@ -70,18 +79,18 @@
     </p>
   </div>
 
-  <div style="margin-top: 50px; margin-bottom: 100px;">
+  <div style="margin-top: 50px; margin-bottom: 75px;">
     <h1>Distance Between Release Date and View Date</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, gifts, etc)</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Free tickets from Sarah's job</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
       </tr>
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc)</td>
       </tr>
     </table>
     <svg id="date-diff-graph"></svg>
@@ -90,18 +99,18 @@
     </p>
   </div>
 
-  <div style="margin-top: 50px; margin-bottom: 50px;">
+  <div style="margin-top: 50px; margin-bottom: 75px;">
       <h1>Theater Visits by Service</h1>
       <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
         <tr>
           <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, gifts, etc)</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Free tickets from Sarah's job</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
         </tr>
         <tr>
           <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc)</td>
         </tr>
       </table>
       <svg id="theater-graph"></svg>
