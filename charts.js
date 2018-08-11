@@ -192,17 +192,16 @@ function drawCalendarChart(data, yearRange, width, height, cellSize, tooltip) {
       .text(d => { return d; });
 
   // Day Labels
-  svg
-     .attr("text-anchor", "end")
+  svg.attr("text-anchor", "end")
      .selectAll("text")
-     .data((d3.range(7)).map(i => new Date(1995, 0, i)))
+     .data((d3.range(8)).map(i => new Date(1995, 0, i)))
      .enter()
      .append("text")
      .attr("fill",        "#93a1a1")
      .attr("font-family", "sans-serif")
      .attr("font-size",   8)
      .attr("x",           -5)
-     .attr("y",           d => (countDay(d) + 0.5) * cellSize)
+     .attr("y",           d => { return countDay(d) * cellSize + (cellSize * 0.5); })
      .attr("dy",          "0.31em")
      .text(formatDay);
 
@@ -383,7 +382,7 @@ function drawTheaterGraph(data, width, height, tooltip) {
 function updateTooltipForMovie(tooltip, movie, xPos, yPos) {
   var dateDiffMessage;
   if(movie.dateDiff < -1) {
-    dateDiffMessage = "<br/>(" + -movie.dateDiff + " days before wide release)";
+    dateDiffMessage = "<br/>(" + -movie.dateDiff + " days before widest release)";
   }
   else if(movie.dateDiff === -1) {
     dateDiffMessage = "<br/>(Thursday preview)";
@@ -395,22 +394,22 @@ function updateTooltipForMovie(tooltip, movie, xPos, yPos) {
 
   var movieTooltipHtml =
     "<div style=\"display:flex; flex-direction:column;\">" +
-    "<span style=\"font-size:1.5em;text-align:center;margin-bottom:10px;\">" + movie.movie + "</span>" +
-    "<div style=\"display:flex\";>" +
-    "<div>" +
-    "<img src=\"" + movie.posterUrl + "\" style=\"width:100px;margin-right:10px;\">" +
-    "</div>" +
-    "<div>" +
-    "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + moment(movie.releaseDate).format("M/D/YYYY") + "<br>" +
-    "<span style=\"font-weight: 900;\">DATE WATCHED: </span>" + moment(movie.date).format("M/D/YYYY") + dateDiffMessage + "<br>" +
-    "<span style=\"font-weight: 900;\">THEATER: </span>" + movie.theater + "<br/>" +
-    (movie.theaterNumber === "" ? "<br/>" : "<span style=\"font-weight: 900;\">THEATER NUMBER: </span>" + movie.theaterNumber + "<br><br>") +
-    "<span style=\"font-weight: 900;\">PRICE: </span>" + movie.price + "<br>" +
-    "<span style=\"font-weight: 900;\">SERVICE?: </span>" + movie.service + "<br>" +
-    "<span style=\"font-weight: 900;\">PREMIUM SCREENING?: </span>" + movie.premium + "<br><br>" +
-    (movie.notes === "" ? "" : "<span style=\"font-weight: 900;\">NOTES: </span>" + movie.notes + "<br>") +
-    "</div>" +
-    "</div>" +
+      "<span style=\"font-size:1.5em;text-align:center;margin-bottom:10px;\">" + movie.movie + "</span>" +
+      "<div style=\"display:flex\";>" +
+        "<div>" +
+          "<img src=\"" + movie.posterUrl + "\" style=\"width:100px;margin-right:10px;\">" +
+        "</div>" +
+        "<div>" +
+          "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + moment(movie.releaseDate).format("M/D/YYYY") + "<br>" +
+          "<span style=\"font-weight: 900;\">DATE WATCHED: </span>" + moment(movie.date).format("M/D/YYYY") + dateDiffMessage + "<br>" +
+          "<span style=\"font-weight: 900;\">THEATER: </span>" + movie.theater + "<br/>" +
+          (movie.theaterNumber === "" ? "<br/>" : "<span style=\"font-weight: 900;\">THEATER NUMBER: </span>" + movie.theaterNumber + "<br><br>") +
+          "<span style=\"font-weight: 900;\">PRICE: </span>" + d3.format("$,.2f")(movie.price) + "<br>" +
+          "<span style=\"font-weight: 900;\">SERVICE?: </span>" + movie.service + "<br>" +
+          "<span style=\"font-weight: 900;\">PREMIUM SCREENING?: </span>" + movie.premium + "<br><br>" +
+          (movie.notes === "" ? "" : "<span style=\"font-weight: 900;\">NOTES: </span>" + movie.notes) +
+        "</div>" +
+      "</div>" +
     "</div>";
 
   updateTooltip(tooltip, xPos, yPos, movieTooltipHtml);

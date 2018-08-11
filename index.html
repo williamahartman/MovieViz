@@ -12,7 +12,6 @@
     font: 10px sans-serif;
     line-height: 1.6;
     background: #002b36;
-    border: 2px;
     pointer-events: none;
   }
 
@@ -53,65 +52,62 @@
 
   <div style="margin-top: 50px; margin-bottom: 100px;">
     <h1>Movies by Day</h1>
-    <p style="font-size:0.75em">
-      Premium showings (3D, IMAX, 70mm, large format) have round icons.<br>
-    </p>
-    <table style="width: 100%; font-size:0.75em; text-align: left;">
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
-        <td><span style="color:#586e75; font-size:1.5em">■</span> - Bought tickets like normal</td>
-        <td><span style="color:#859900; font-size:1.5em">■</span> - Free tickets (passes, gifts, etc)</td>
-        <td><span style="color:#b58900; font-size:1.5em">■</span> - Free tickets from Sarah's job</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, gifts, etc)</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Free tickets from Sarah's job</td>
       </tr>
       <tr>
-        <td><span style="color:#6c71c4; font-size:1.5em">■</span> - Snuck in 😈</td>
-        <td><span style="color:#d33682; font-size:1.5em">■</span> - Bought tickets with MoviePass</td>
-        <td><span style="color:#2aa198; font-size:1.5em">■</span> - Bought tickets with Sinema</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
       </tr>
     </table>
     <div id="calendar-graph"></div>
+    <p style="font-size:0.75em; margin-top:20px; text-align:center;">
+      Premium showings (3D, IMAX, 70mm, large format) have round icons
+    </p>
   </div>
 
   <div style="margin-top: 50px; margin-bottom: 100px;">
     <h1>Distance Between Release Date and View Date</h1>
-    <p style="font-size:0.75em">
-      Only first run movies are shown. Bars are layered for movies that were viewed more than once. 
-      Movies with a very large gap (usually because of bad data on IMDb...) are allowed to go off 
-      the chart on either side. <br>
-    </p>
-    <table style="width: 100%; font-size:0.75em; text-align: left;">
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
-        <td><span style="color:#586e75; font-size:1.5em">■</span> - Bought tickets like normal</td>
-        <td><span style="color:#859900; font-size:1.5em">■</span> - Free tickets (passes, gifts, etc)</td>
-        <td><span style="color:#b58900; font-size:1.5em">■</span> - Free tickets from Sarah's job</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, gifts, etc)</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Free tickets from Sarah's job</td>
       </tr>
       <tr>
-        <td><span style="color:#6c71c4; font-size:1.5em">■</span> - Snuck in 😈</td>
-        <td><span style="color:#d33682; font-size:1.5em">■</span> - Bought tickets with MoviePass</td>
-        <td><span style="color:#2aa198; font-size:1.5em">■</span> - Bought tickets with Sinema</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
       </tr>
     </table>
     <svg id="date-diff-graph"></svg>
+    <p style="font-size:0.75em; margin-top: 0px; text-align:center;">
+      Only first run movies are shown. Bars are layered for movies that were viewed more than once.
+    </p>
   </div>
 
   <div style="margin-top: 50px; margin-bottom: 50px;">
       <h1>Theater Visits by Service</h1>
-      <p style="font-size:0.75em">
-        All theaters and services are shown, but no distinction is made between premium and 
-        non-premium screenings.<br>
-      </p>
-      <table style="width: 100%; font-size:0.75em; text-align: left;">
+      <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
         <tr>
-          <td><span style="color:#586e75; font-size:1.5em">■</span> - Bought tickets like normal</td>
-          <td><span style="color:#859900; font-size:1.5em">■</span> - Free tickets (passes, gifts, etc)</td>
-          <td><span style="color:#b58900; font-size:1.5em">■</span> - Free tickets from Sarah's job</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, gifts, etc)</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Free tickets from Sarah's job</td>
         </tr>
         <tr>
-          <td><span style="color:#6c71c4; font-size:1.5em">■</span> - Snuck in 😈</td>
-          <td><span style="color:#d33682; font-size:1.5em">■</span> - Bought tickets with MoviePass</td>
-          <td><span style="color:#2aa198; font-size:1.5em">■</span> - Bought tickets with Sinema</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+          <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
         </tr>
       </table>
       <svg id="theater-graph"></svg>
+      <p style="font-size:0.75em; margin-top: 0px; text-align:center;">
+        No distinction is made between premium and non-premium screenings
+      </p>
     </div>
 
     <div style="margin-top: 50px; margin-bottom: 50px;">
