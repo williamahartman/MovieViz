@@ -1,17 +1,17 @@
 function updateData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheets()[0];
-  var range = sheet.getRange("$B$2:$O1000");
+  var range = sheet.getRange("$B$2:$P1000");
   var rangeVals = range.getValues();
   var i;
   for(i = 0; i < rangeVals.length; i++) {
     var name = rangeVals[i][0];
-    var year = rangeVals[i][1];
-    var omdbDataColumns = "" + rangeVals[i][11] + rangeVals[i][12] + rangeVals[i][13];
+    var year = rangeVals[i][10];
+    var omdbDataColumns = "" + rangeVals[i][12] + rangeVals[i][13] + rangeVals[i][14];
     
     if(!isEmpty(name) && isEmpty(omdbDataColumns)) {
       var currentRow = i + 2;
-      sheet.getRange("$M$" + currentRow + ":$O" + currentRow).setValues([getOmdbData(name, year)]);
+      sheet.getRange("$N$" + currentRow + ":$P" + currentRow).setValues([getOmdbData(name, year)]);
     }
   }
 }
