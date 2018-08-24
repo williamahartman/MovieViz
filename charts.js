@@ -28,11 +28,11 @@ function drawGraphs(data, tabletop) {
 
   //Draw Charts
   drawTextStats(data, "#text-stats");
-  drawProfitGraph(data, "#moviepass-profit-graph", "Moviepass", "#d33682", 99.50, 885, 150, tooltipDiv);
-  drawProfitGraph(data, "#sinema-profit-graph", "Sinema", "#2aa198", 179.88, 885, 150, tooltipDiv);
   drawCalendarChart(data, "#calendar-graph", d3.range(2017, 2019), color, 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", color, 885, 600, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", color, 885, 250, tooltipDiv);
+  drawProfitGraph(data, "#moviepass-profit-graph", "Moviepass", "#d33682", 99.50, false, 885, 175);
+  drawProfitGraph(data, "#sinema-profit-graph", "Sinema", "#2aa198", 179.88, true, 885, 175);
 }
 
 function drawTextStats(data, id) {
@@ -70,65 +70,6 @@ function drawTextStats(data, id) {
         "</tr>" + 
       "</table>"
     );
-}
-
-//Draw a chart of profits
-function drawProfitGraph(data, id, service, color, targetAmount, width, height, tooltip) {
-  var svg = d3.select(id),
-      margin = {top: 20, right: 20, bottom: 35, left: 20},
-      chartWidth = width - margin.left - margin.right,
-      chartHeight = height - margin.top - margin.bottom;
-
-  var receivedAmount = data.filter(d => d.service === service)
-                           .reduce((acc, val) => Number(val.price.replace(/[^0-9\.-]+/g,"")) + acc, 0);
-  var profitData = [{service: service, value: receivedAmount}];
-
-  //Scales
-  var x = d3.scaleLinear().range([0, chartWidth]);
-  var y = d3.scaleBand().range([chartHeight, 0]);
-
-  x.domain([-0.5, receivedAmount > targetAmount ? receivedAmount * 1.333 : targetAmount * 1.333]);
-  y.domain([service]).padding(0.1);
-
-  //SVG setup
-  var g = svg.attr("width", width)
-             .attr("height", height)
-             .append("g")
-             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  //X axis
-  g.append("g")
-      .attr("class", "xaxis")
-      .attr("transform", "translate(0," + chartHeight + ")")
-      .call(d3.axisBottom(x)
-        .ticks(1)
-        .tickSizeInner([10])
-        .tickValues([targetAmount])
-        .tickFormat(d => d3.format("$,.2f")(d) + " on " + service + " subscription"));
-  
-  //Price bar
-  g.selectAll(".bar")
-      .data(profitData)
-    .enter()
-      .append("rect")
-      .attr("class",   "bar")
-      .attr("fill",    color)
-      .attr("x",       0)
-      .attr("height",  y.bandwidth())
-      .attr("y",       d => y(d.service))
-      .attr("width",   d => x(d.value));
-
-  //Text at end of bar
-  g.selectAll(".text")  		
-    .data(profitData)
-    .enter()
-    .append("text")
-    .attr("class", "label")
-    .attr("fill",  "#93a1a1")
-      .attr("x", d => x(d.value) + 10)
-      .attr("y", d => y(d.service) + (y.bandwidth() / 2))
-    .attr("font-size", 12)
-      .text(d => d3.format("$,.2f")(d.value) + " in tickets from " + service);  
 }
 
 //Draw a calendar chart with moves on it.
@@ -379,6 +320,76 @@ function drawTheaterGraph(data, id, color, width, height, tooltip) {
        updateTooltip(tooltip, d3.event.pageX, d3.event.pageY, text);
        showTooltip(tooltip);
      });
+}
+
+//Draw a chart of profits
+function drawProfitGraph(data, id, service, color, targetAmount, includeFees, width, height) {
+  var svg = d3.select(id),
+      margin = {top: 20, right: 20, bottom: 75, left: 20},
+      chartWidth = width - margin.left - margin.right,
+      chartHeight = height - margin.top - margin.bottom;
+
+  var filteredData = data.filter(d => d.service === service);
+  var receivedAmount = filteredData.reduce((acc, val) => Number(val.price) + acc, 0);
+  var profitData = [{service: service, value: receivedAmount}];
+
+  var adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
+
+  //Scales
+  var x = d3.scaleLinear().range([0, chartWidth]);
+  var y = d3.scaleBand().range([chartHeight, 0]);
+
+  x.domain([-0.5, receivedAmount > adjustedTarget ? receivedAmount * 1.333 : adjustedTarget * 1.333]);
+  y.domain([service]).padding(0.25);
+
+  //SVG setup
+  var g = svg.attr("width", width)
+             .attr("height", height)
+             .append("g")
+             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  //X axis
+  g.append("g")
+      .attr("class", "xaxis")
+      .attr("transform", "translate(0," + chartHeight + ")")
+      .call(d3.axisBottom(x)
+        .tickSizeInner([-chartHeight])
+        .ticks(1)
+        .tickValues([adjustedTarget])
+        .tickFormat(d => d3.format("$,.2f")(d) + " on " + service + " subscription" + (includeFees ? " (including fees)" : "")));
+  
+  //Price bar
+  g.selectAll(".bar")
+      .data(profitData)
+    .enter()
+      .append("rect")
+      .attr("class",   "bar")
+      .attr("fill",    color)
+      .attr("x",       0)
+      .attr("height",  y.bandwidth())
+      .attr("y",       d => y(d.service))
+      .attr("width",   d => x(d.value));
+
+  //Text at end of bar
+  g.selectAll(".text")
+    .data(profitData)
+    .enter()
+    .append("text")
+    .attr("fill",  "#93a1a1")
+      .attr("x", d => x(d.value) + 10)
+      .attr("y", d => y(d.service) + (y.bandwidth() / 3))
+      .attr("font-size", 12)
+      .text(d => d3.format("$,.2f")(d.value) + " in tickets from " + service);
+
+  g.selectAll(".text")
+    .data(profitData)
+    .enter()
+    .append("text")
+    .attr("fill",  "#93a1a1")
+      .attr("x", d => x(d.value) + 10)
+      .attr("y", d => y(d.service) + (y.bandwidth() * 2.5 / 3))
+      .attr("font-size", 10)
+      .text(d => "(" + d3.format("$,.2f")(adjustedTarget / filteredData.length) + " per ticket)");
 }
 
 
