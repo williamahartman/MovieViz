@@ -27,7 +27,7 @@ function drawGraphs(data, tabletop) {
 
   //Color schemes per category
   var color = d3.scaleOrdinal()
-                .domain(["Moviepass", "Sinema", "Free Tickets", "Gift", "Accidental Scam", "None"])
+                .domain(["Moviepass", "Sinema", "Free Tickets", "Gift", "Snuck In", "None"])
                 .range(["#d33682", "#2aa198", "#859900", "#b58900", "#6c71c4", "#586e75"]);
 
   //Draw Charts
@@ -40,37 +40,45 @@ function drawGraphs(data, tabletop) {
 }
 
 function drawTextStats(data, startYear, id) {
+  var numMovies = data.length;
+  var numNoService = data.filter(d => d.service === "None").length;
+  var numMoviepass = data.filter(d => d.service === "Moviepass").length;
+  var numSinema = data.filter(d => d.service === "Sinema").length;
+  var numFree = data.filter(d => d.service === "Free Tickets").length;
+  var numGift = data.filter(d => d.service === "Gift").length;
+  var numSneak = data.filter(d => d.service === "Snuck In").length;
+
   d3.select(id)
     .append("p")
     .html(
       "<table style=\"border-collapse:collapse;text-align:left;\">" + 
         "<tr>" + 
-          "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px\">" + data.length + "</td>" +
+          "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px\">" + numMovies + "</td>" +
           "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#586e75;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "None").length + "</td>" +
-          "<td style=\"padding-left:15px;\">tickets paid for normally</td>" +
+          "<td style=\"color:#586e75;font-size:25px;text-align:right;\">" + numNoService + "</td>" +
+          "<td style=\"padding-left:15px;\">" + (numNoService == 1 ? "ticket" : "tickets") + " paid for normally</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#d33682;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Moviepass").length + "</td>" +
-          "<td style=\"padding-left:15px;\">tickets from MoviePass</td>" +
+          "<td style=\"color:#d33682;font-size:25px;text-align:right;\">" + numMoviepass + "</td>" +
+          "<td style=\"padding-left:15px;\">" + (numMoviepass == 1 ? "ticket" : "tickets") + " from MoviePass</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#2aa198;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Sinema").length + "</td>" +
-          "<td style=\"padding-left:15px;\">tickets from Sinema</td>" +
+          "<td style=\"color:#2aa198;font-size:25px;text-align:right;\">" + numSinema + "</td>" +
+          "<td style=\"padding-left:15px;\">" + (numSinema == 1 ? "ticket" : "tickets") + " from Sinema</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#859900;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Free Tickets").length + "</td>" +
-          "<td style=\"padding-left:15px;\">free tickets (passes, promotions, etc.)</td>" +
+          "<td style=\"color:#859900;font-size:25px;text-align:right;\">" + numFree + "</td>" +
+          "<td style=\"padding-left:15px;\">free " + (numFree == 1 ? "ticket" : "tickets") + " (passes, promotions, etc.)</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Gift").length + "</td>" +
-          "<td style=\"padding-left:15px;\">tickets received as gifts</td>" +
+          "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + numGift + "</td>" +
+          "<td style=\"padding-left:15px;\">" + (numGift == 1 ? "ticket" : "tickets") + " received as gifts</td>" +
         "</tr>" + 
         "<tr>" + 
-          "<td style=\"color:#6c71c4;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "Accidental Scam").length + "</td>" +
-          "<td style=\"padding-left:15px;\">movies snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
+          "<td style=\"color:#6c71c4;font-size:25px;text-align:right;\">" + numSneak + "</td>" +
+          "<td style=\"padding-left:15px;\">" + (numSneak == 1 ? "movie" : "movies") + " snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
         "</tr>" + 
       "</table>"
     );
