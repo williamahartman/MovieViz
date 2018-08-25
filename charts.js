@@ -21,28 +21,32 @@ function drawGraphs(data, tabletop) {
   });
   console.log(data);
 
+  //Figure out year range
+  firstYear = d3.min(data, d => moment(d.date).year());
+  lastYear =  d3.max(data, d => moment(d.date).year());
+
   //Color schemes per category
   var color = d3.scaleOrdinal()
                 .domain(["Moviepass", "Sinema", "Free Tickets", "Gift", "Accidental Scam", "None"])
                 .range(["#d33682", "#2aa198", "#859900", "#b58900", "#6c71c4", "#586e75"]);
 
   //Draw Charts
-  drawTextStats(data, "#text-stats");
-  drawCalendarChart(data, "#calendar-graph", d3.range(2017, 2019), color, 885, 136, 15, tooltipDiv);
+  drawTextStats(data, firstYear, "#text-stats");
+  drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), color, 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", color, 885, 600, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", color, 885, 250, tooltipDiv);
   drawProfitGraph(data, "#moviepass-profit-graph", "Moviepass", "#d33682", 99.50, false, 885, 175);
   drawProfitGraph(data, "#sinema-profit-graph", "Sinema", "#2aa198", 179.88, true, 885, 175);
 }
 
-function drawTextStats(data, id) {
+function drawTextStats(data, startYear, id) {
   d3.select(id)
     .append("p")
     .html(
       "<table style=\"border-collapse:collapse;text-align:left;\">" + 
         "<tr>" + 
           "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px\">" + data.length + "</td>" +
-          "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/2017</td>" +
+          "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
         "<tr>" + 
           "<td style=\"color:#586e75;font-size:25px;text-align:right;\">" + data.filter(d => d.service === "None").length + "</td>" +
