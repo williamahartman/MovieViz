@@ -56,31 +56,39 @@ function drawTextStats(data, startYear, id) {
           "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px\">" + numMovies + "</td>" +
           "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
-        "<tr>" + 
-          "<td style=\"color:#586e75;font-size:25px;text-align:right;\">" + numNoService + "</td>" +
-          "<td style=\"padding-left:15px;\">" + (numNoService == 1 ? "ticket" : "tickets") + " paid for normally</td>" +
-        "</tr>" + 
-        "<tr>" + 
-          "<td style=\"color:#d33682;font-size:25px;text-align:right;\">" + numMoviepass + "</td>" +
-          "<td style=\"padding-left:15px;\">" + (numMoviepass == 1 ? "ticket" : "tickets") + " from MoviePass</td>" +
-        "</tr>" + 
-        "<tr>" + 
-          "<td style=\"color:#2aa198;font-size:25px;text-align:right;\">" + numSinema + "</td>" +
-          "<td style=\"padding-left:15px;\">" + (numSinema == 1 ? "ticket" : "tickets") + " from Sinema</td>" +
-        "</tr>" + 
-        "<tr>" + 
-          "<td style=\"color:#859900;font-size:25px;text-align:right;\">" + numFree + "</td>" +
-          "<td style=\"padding-left:15px;\">free " + (numFree == 1 ? "ticket" : "tickets") + " (passes, promotions, etc.)</td>" +
-        "</tr>" + 
-        "<tr>" + 
-          "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + numGift + "</td>" +
-          "<td style=\"padding-left:15px;\">" + (numGift == 1 ? "ticket" : "tickets") + " received as gifts</td>" +
-        "</tr>" + 
-        "<tr>" + 
-          "<td style=\"color:#6c71c4;font-size:25px;text-align:right;\">" + numSneak + "</td>" +
-          "<td style=\"padding-left:15px;\">" + (numSneak == 1 ? "movie" : "movies") + " snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
-        "</tr>" + 
-      "</table>"
+      "</table>" +
+      "<div style=\"display: flex;\">" + 
+        "<table style=\"border-collapse:collapse;text-align:left;margin-right:50px\">" + 
+          "<tr>" + 
+            "<td style=\"color:#586e75;font-size:25px;text-align:right;\">" + numNoService + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numNoService == 1 ? "ticket" : "tickets") + " paid for normally</td>" +
+          "</tr>" + 
+          "<tr>" + 
+            "<td style=\"color:#6c71c4;font-size:25px;text-align:right;\">" + numSneak + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numSneak == 1 ? "movie" : "movies") + " snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
+          "</tr>" + 
+        "</table>" +
+        "<table style=\"border-collapse:collapse;text-align:left;margin-right:50px\">" + 
+          "<tr>" + 
+            "<td style=\"color:#d33682;font-size:25px;text-align:right;\">" + numMoviepass + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numMoviepass == 1 ? "ticket" : "tickets") + " from MoviePass</td>" +
+          "</tr>" + 
+          "<tr>" + 
+            "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + numGift + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numGift == 1 ? "ticket" : "tickets") + " received as gifts</td>" +
+          "</tr>" + 
+        "</table>" +
+        "<table style=\"border-collapse:collapse;text-align:left;\">" +
+          "<tr>" + 
+            "<td style=\"color:#2aa198;font-size:25px;text-align:right;\">" + numSinema + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numSinema == 1 ? "ticket" : "tickets") + " from Sinema</td>" +
+          "</tr>" + 
+          "<tr>" + 
+            "<td style=\"color:#859900;font-size:25px;text-align:right;\">" + numFree + "</td>" +
+            "<td style=\"padding-left:15px;\">free " + (numFree == 1 ? "ticket" : "tickets") + " (passes, promotions, etc.)</td>" +
+          "</tr>" + 
+        "</table>" +
+      "</div>"
     );
 }
 
