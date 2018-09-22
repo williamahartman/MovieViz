@@ -1,71 +1,40 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-
 <link rel="stylesheet" type="text/css" href="solarized-dark.css" />
-
-<style>
-  div.tooltip {
-    position: absolute;
-    width: 320px;
-    text-align: left;
-    padding: 7px;
-    font: 10px sans-serif;
-    line-height: 1.6;
-    background: #002b36;
-    pointer-events: none;
-  }
-
-  .xaxis line{
-    stroke-width: 0.5px;
-    stroke: #586e75;
-  }
-
-  .xaxis path{
-    stroke-width: 0.5px;
-    stroke: #586e75;
-  }
-
-  .xaxis text{
-    fill: #93a1a1ed;
-  }  
-
-  .yaxis line{
-    stroke-width: 0.5px;
-    stroke: #586e75;
-  }
-
-  .yaxis path{
-    stroke-width: 0.5px;
-    stroke: #586e75;
-  }
-
-  .yaxis text{
-    fill: #93a1a1ed;
-  }
-
-  .tick line {
-    stroke-width: 0.5px;
-    stroke: #586e75;
-  }
-</style>
-
+<link rel="stylesheet" type="text/css" href="style.css" />
 <script src="https://d3js.org/d3.v5.js"></script>
 <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment.min.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js'></script>
-
-<body style="margin-bottom: 250px;">
-  <div id="text-stats" style="margin-top: 50px; margin-bottom: 75px;">
+<body>
+  <div class="section-small">
+    <h1>Movie Theater Data Since 2017</h1>
+    <p style="font-size:0.85em">
+        I started using MoviePass a little while ago, so I've seen a lot of movies in that past year. With the service falling apart, 
+        I thought it would be fun to take a look at the data on all the movies I saw in theaters.
+        <br><br>
+        The data is visualized with <a href="https://d3js.org/">D3</a>. All the data is pulled directly from a 
+        <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a> 
+        with <a href="https://github.com/jsoma/tabletop">Tabletop.js</a> on page load. Some of the data in the sheet comes from 
+        <a href="http://www.omdbapi.com/">OMDb</a>, but most of it is stuff I entered myself with a Google Form. With this setup, 
+        anytime I add a new movie to the spreadsheet, the viz stays up to date.
+        <br><br>
+        I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> 
+        <a href="https://beta.observablehq.com/@mbostock/d3-calendar-view">projects</a> for the calendar chart and 
+        <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the stacked bar chart. 
+        I used <a href="http://thomasf.github.io/solarized-css/">this CSS</a> for the Solarized Dark color scheme.
+    </p>
+  </div>
+  <div id="text-stats" class="section-small">
     <h1>General Statistics</h1>
   </div>
-
-  <div style="margin-top: 50px; margin-bottom: 75px;">
+  <div class="section">
     <h1>Movies by Day</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
       </tr>
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
@@ -74,18 +43,17 @@
       </tr>
     </table>
     <div id="calendar-graph"></div>
-    <p style="font-size:0.75em; margin-top:20px; text-align:center;">
-      Premium showings (3D, IMAX, 70mm, large format) have round icons
+    <p class="chart-caption">
+      Premium showings (3D, IMAX, 70mm, large format) have dashed icons.
     </p>
   </div>
-
-  <div style="margin-top: 50px; margin-bottom: 75px;">
+  <div class="section">
     <h1>Distance Between Release Date and View Date</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
       </tr>
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
@@ -94,41 +62,37 @@
       </tr>
     </table>
     <svg id="date-diff-graph"></svg>
-    <p style="font-size:0.75em; margin-top: 0px; text-align:center;">
-      From date of widest release. Only first run movies are shown. Bars are layered for movies that were viewed more than once.
+    <p class="chart-caption">
+      From date of widest release. Only first run movies are shown. Premium showings have dashed icons. Bars are layered for movies that were viewed more than once.
     </p>
   </div>
-
-  <div style="margin-top: 50px; margin-bottom: 75px;">
-      <h1>Theater Visits by Service</h1>
-      <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
-        <tr>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinema</td>
-        </tr>
-        <tr>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
-          <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
-        </tr>
-      </table>
-      <svg id="theater-graph"></svg>
-      <p style="font-size:0.75em; margin-top: 0px; text-align:center;">
-        No distinction is made between premium and non-premium screenings
-      </p>
-    </div>
-
-    <div style="margin-top: 50px; margin-bottom: 50px;">
-      <h1>Sinema Profitability</h1>
-      <svg id="sinema-profit-graph"></svg>
-    </div>
-
-    <div style="margin-top: 50px; margin-bottom: 50px;">
-      <h1>MoviePass Profitability</h1>
-      <svg id="moviepass-profit-graph"></svg>
-    </div>
-    
+  <div class="section">
+    <h1>Theater Visits by Service</h1>
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
+      <tr>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
+      </tr>
+      <tr>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
+      </tr>
+    </table>
+    <svg id="theater-graph"></svg>
+    <p class="chart-caption">
+      No distinction is made between premium and non-premium screenings
+    </p>
+  </div>
+  <div class="section-small">
+    <h1>Sinemia Profitability</h1>
+    <svg id="sinemia-profit-graph"></svg>
+  </div>
+  <div class="section-small">
+    <h1>MoviePass Profitability</h1>
+    <svg id="moviepass-profit-graph"></svg>
+  </div>
   <script src="charts.js"></script>
+  <a href="https://github.com/williamahartman/MovieViz"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 </body>
-

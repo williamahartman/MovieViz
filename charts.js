@@ -1,22 +1,25 @@
 //Load data from spreadsheet and draw graphs
-var public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
+let public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
 Tabletop.init({ key: public_spreadsheet_url,
                 callback: drawGraphs,
                 simpleSheet: true });
-
+            
 function drawGraphs(data, tabletop) {
   // Define the div for the tooltip
-  var tooltipDiv = d3.select("body")
+  let tooltipDiv = d3.select("body")
                      .append("div")
                      .attr("class",    "tooltip")
                      .style("opacity", 0);
 
-  //Clean up dates, add released/viewed date difference
+  //Clean up data
   data = data.map(d => { 
     d.date = moment(d.date, "MM/D/YYYY");
     d.releaseDate = moment(d.releaseDate, "DD MMM YYYY")
-
     d.dateDiff = moment(d.date, "MM/D/YYYY").diff(d.releaseDate, "days");
+    d.firstRun = d.firstRun === "Yes";
+    d.isPremium = d.premium === "No" ? "non-premium" : "premium";
+    d.serviceName = d.service;
+    d.service = "service-" + d.service.toLowerCase().replace(" ", "-")
     return d;
   });
   console.log(data);
@@ -25,28 +28,23 @@ function drawGraphs(data, tabletop) {
   firstYear = d3.min(data, d => moment(d.date).year());
   lastYear =  d3.max(data, d => moment(d.date).year());
 
-  //Color schemes per category
-  var color = d3.scaleOrdinal()
-                .domain(["Moviepass", "Sinema", "Free Tickets", "Gift", "Snuck In", "None"])
-                .range(["#d33682", "#2aa198", "#859900", "#b58900", "#6c71c4", "#586e75"]);
-
   //Draw Charts
   drawTextStats(data, firstYear, "#text-stats");
-  drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), color, 885, 136, 15, tooltipDiv);
-  drawDateDiffBarGraph(data, "#date-diff-graph", color, 885, 600, tooltipDiv);
-  drawTheaterGraph(data, "#theater-graph", color, 885, 250, tooltipDiv);
-  drawProfitGraph(data, "#moviepass-profit-graph", "Moviepass", "#d33682", 99.50, false, 885, 175);
-  drawProfitGraph(data, "#sinema-profit-graph", "Sinema", "#2aa198", 179.88, true, 885, 175);
+  drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
+  drawDateDiffBarGraph(data, "#date-diff-graph", 885, 600, tooltipDiv);
+  drawTheaterGraph(data, "#theater-graph", 885, 250, tooltipDiv);
+  drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 175);
+  drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 175);
 }
 
 function drawTextStats(data, startYear, id) {
-  var numMovies = data.length;
-  var numNoService = data.filter(d => d.service === "None").length;
-  var numMoviepass = data.filter(d => d.service === "Moviepass").length;
-  var numSinema = data.filter(d => d.service === "Sinema").length;
-  var numFree = data.filter(d => d.service === "Free Tickets").length;
-  var numGift = data.filter(d => d.service === "Gift").length;
-  var numSneak = data.filter(d => d.service === "Snuck In").length;
+  let numMovies = data.length;
+  let numNoService = data.filter(d => d.service === "service-none").length;
+  let numMoviepass = data.filter(d => d.service === "service-moviepass").length;
+  let numSinemia = data.filter(d => d.service === "service-sinemia").length;
+  let numFree = data.filter(d => d.service === "service-free-tickets").length;
+  let numGift = data.filter(d => d.service === "service-gift").length;
+  let numSneak = data.filter(d => d.service === "service-snuck-in").length;
 
   d3.select(id)
     .append("p")
@@ -60,31 +58,31 @@ function drawTextStats(data, startYear, id) {
       "<div style=\"display: flex;\">" + 
         "<table style=\"border-collapse:collapse;text-align:left;margin-right:50px\">" + 
           "<tr>" + 
-            "<td style=\"color:#586e75;font-size:25px;text-align:right;\">" + numNoService + "</td>" +
+            "<td class=\"service-none\" style=\"font-size:25px;text-align:right;\">" + numNoService + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numNoService == 1 ? "ticket" : "tickets") + " paid for normally</td>" +
           "</tr>" + 
           "<tr>" + 
-            "<td style=\"color:#6c71c4;font-size:25px;text-align:right;\">" + numSneak + "</td>" +
+            "<td class=\"service-snuck-in\" style=\"font-size:25px;text-align:right;\">" + numSneak + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numSneak == 1 ? "movie" : "movies") + " snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
           "</tr>" + 
         "</table>" +
         "<table style=\"border-collapse:collapse;text-align:left;margin-right:50px\">" + 
           "<tr>" + 
-            "<td style=\"color:#d33682;font-size:25px;text-align:right;\">" + numMoviepass + "</td>" +
+            "<td class=\"service-moviepass\" style=\"font-size:25px;text-align:right;\">" + numMoviepass + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numMoviepass == 1 ? "ticket" : "tickets") + " from MoviePass</td>" +
           "</tr>" + 
           "<tr>" + 
-            "<td style=\"color:#b58900;font-size:25px;text-align:right;\">" + numGift + "</td>" +
+            "<td class=\"service-gift\" style=\"font-size:25px;text-align:right;\">" + numGift + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numGift == 1 ? "ticket" : "tickets") + " received as gifts</td>" +
           "</tr>" + 
         "</table>" +
         "<table style=\"border-collapse:collapse;text-align:left;\">" +
           "<tr>" + 
-            "<td style=\"color:#2aa198;font-size:25px;text-align:right;\">" + numSinema + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numSinema == 1 ? "ticket" : "tickets") + " from Sinema</td>" +
+            "<td class=\"service-sinemia\" style=\"font-size:25px;text-align:right;\">" + numSinemia + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numSinemia == 1 ? "ticket" : "tickets") + " from Sinemia</td>" +
           "</tr>" + 
           "<tr>" + 
-            "<td style=\"color:#859900;font-size:25px;text-align:right;\">" + numFree + "</td>" +
+            "<td class=\"service-free-tickets\" style=\"font-size:25px;text-align:right;\">" + numFree + "</td>" +
             "<td style=\"padding-left:15px;\">free " + (numFree == 1 ? "ticket" : "tickets") + " (passes, promotions, etc.)</td>" +
           "</tr>" + 
         "</table>" +
@@ -93,13 +91,13 @@ function drawTextStats(data, startYear, id) {
 }
 
 //Draw a calendar chart with moves on it.
-function drawCalendarChart(data, id, yearRange, color, width, height, cellSize, tooltip) {
+function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip) {
   const countDay = d => d.getDay(),
         formatDay = d => "SMTWRFS"[d.getDay()],
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   //SVG for the chart
-  var svg = d3.select(id)
+  let svg = d3.select(id)
               .attr("class", "calendar-chart")
               .selectAll("svg")
               .data(yearRange)
@@ -111,7 +109,7 @@ function drawCalendarChart(data, id, yearRange, color, width, height, cellSize, 
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
   // Days
-  var rect = svg.append("g")
+  let rect = svg.append("g")
                 .attr("fill",   "#073642")
                 .attr("stroke", "#002b36")
                 .selectAll("rect")
@@ -127,10 +125,10 @@ function drawCalendarChart(data, id, yearRange, color, width, height, cellSize, 
   // Update days with viewing data
   data.forEach(datum => {
     rect.filter(d => moment(datum.date).isSame(d, "day"))
-        .attr("fill",    d => color(datum.service))
-        .attr("rx",      datum.premium === "No" ? 0 : cellSize / 2)
-        .on("mouseout",  d => hideTooltip(tooltip))
-        .on("mouseover", d => {
+        .classed(datum.service, true)
+        .classed(datum.isPremium, true)
+        .on("mouseout",  () => hideTooltip(tooltip))
+        .on("mouseover", () => {
           updateTooltipForMovie(tooltip, datum, d3.event.pageX, d3.event.pageY);
           showTooltip(tooltip);
         });
@@ -187,37 +185,37 @@ function drawCalendarChart(data, id, yearRange, color, width, height, cellSize, 
 }
 
 //Draw a chart of movie date distances
-function drawDateDiffBarGraph(data, id, color, width, height, tooltip) {
-  var svg = d3.select(id),
+function drawDateDiffBarGraph(data, id, width, height, tooltip) {
+  let svg = d3.select(id),
       margin = {top: 20, right: 20, bottom: 30, left: 150},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
   //Sort and filter data, find min/max
   data.sort((a, b) => b.dateDiff - a.dateDiff);
-  var filteredData = data.filter(d => d.firstRun === "Yes")
+  let filteredData = data.filter(d => d.firstRun)
                          .map(d => {
                            d.movieGraph = d.movie.length > 25 ? d.movie.substring(0,25)+"..." : d.movie;
                            return d;
                          });
-  var minDiff = d3.min(filteredData, d => d.dateDiff);
-  var maxDiff = d3.max(filteredData, d => d.dateDiff);
+  let minDiff = d3.min(filteredData, d => d.dateDiff);
+  let maxDiff = d3.max(filteredData, d => d.dateDiff);
     
   //Scales
-  var x = d3.scaleLinear().range([0, chartWidth]);
-  var y = d3.scaleBand().range([chartHeight, 0]);
+  let x = d3.scaleLinear().range([0, chartWidth]);
+  let y = d3.scaleBand().range([chartHeight, 0]);
   x.domain([minDiff, maxDiff + 5]);
   y.domain(filteredData.map(d => d.movieGraph)).padding(0.1);
 
   //SVG setup
-  var g = svg.attr("width", width)
+  let g = svg.attr("width", width)
       .attr("height", height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   //X-axis
-  var ticks = [];
-  var i = 0;
+  let ticks = [];
+  let i = 0;
   for(i = minDiff; i <= maxDiff + 5; i++) {
     if(i % 7 == 0) {
       ticks.push(i);
@@ -236,27 +234,24 @@ function drawDateDiffBarGraph(data, id, color, width, height, tooltip) {
       .call(d3.axisLeft(y));
   
   //Date diff bars
-  var moviesAdded = []
+  let moviesAdded = []
   g.selectAll(".bar")
       .data(filteredData)
     .enter()
       .append("rect")
-      .attr("class",   "bar")
-      .attr("fill",    d => {
-        if(moviesAdded.find(m => m.movie === d.movie && m.service === d.service)) {
-          return(d3.color(color(d.service)).darker().toString());
-        } else {
-          moviesAdded.push(d);
-          return color(d.service);
-        }
+      .classed("bar", true)
+      .classed("darker", moviesAdded.find(m => m.movie === d.movie && m.service === d.service))
+      .attr("class",  d => {
+        moviesAdded.push(d);
+        return d.service + " " + d.isPremium;
       })
       .attr("x",  d => d.dateDiff > 0 ? x(0) : d.dateDiff === 0 ? x(-0.25) : x(d.dateDiff))
       .attr("height",  y.bandwidth())
-      .attr("y",       function(d) { return y(d.movieGraph); })
-      .attr("width",   function(d) { 
+      .attr("y",       d => y(d.movieGraph))
+      .attr("width",   d => { 
         return d.dateDiff == 0 ? x(0.5) - x(0) : Math.abs(x(d.dateDiff) - x(0)); 
       })
-      .on("mouseout",  d => hideTooltip(tooltip))
+      .on("mouseout",  () => hideTooltip(tooltip))
       .on("mouseover", d => {
         updateTooltipForMovie(tooltip, d, d3.event.pageX, d3.event.pageY);
         showTooltip(tooltip);
@@ -264,43 +259,51 @@ function drawDateDiffBarGraph(data, id, color, width, height, tooltip) {
 }
 
 //Draw a graph of theater counts
-function drawTheaterGraph(data, id, color, width, height, tooltip) {
-  var svg = d3.select(id),
+function drawTheaterGraph(data, id, width, height, tooltip) {
+  let svg = d3.select(id),
       margin = {top: 20, right: 20, bottom: 30, left: 180},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
+  serviceList = [];
+  data.forEach(d => {
+    if(!serviceList.includes(d.service)) {
+      serviceList.push(d.service);
+    }
+  })
+  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
+
   //Data processing
-  var theaterCounts = d3.nest()
+  let theaterCounts = d3.nest()
                         .key(d => d.theater)
                         .key(d => d.service)
                         .rollup(v => v.length)
                         .entries(data);
   
   theaterCounts.map(d => {
-    var zeroOrService = s => {
-      var service = d.values.find(v => v.key === s);
-      return service? service.value : 0;
+    let zeroOrService = s => {
+      let service = d.values.find(v => v.key === s);
+      return service ? service.value : 0;
     };
-    color.domain().forEach(c => d[c] = zeroOrService(c))
+    serviceList.forEach(c => d[c] = zeroOrService(c))
     delete d.values;
     return d;
   });
 
-  var getNumVisits = m => color.domain().reduce((acc, service) => m[service] + acc, 0);
+  let getNumVisits = m => serviceList.reduce((acc, service) => m[service] + acc, 0);
   theaterCounts.sort((a, b) => getNumVisits(b) - getNumVisits(a));
 
-  var maxVisits = d3.max(theaterCounts, d => getNumVisits(d));
-  var stack = d3.stack().keys(color.domain())(theaterCounts);
+  let maxVisits = d3.max(theaterCounts, d => getNumVisits(d));
+  let stack = d3.stack().keys(serviceList)(theaterCounts);
 
   //Scales
-  var x = d3.scaleLinear().range([0, chartWidth]);
-  var y = d3.scaleBand().range([chartHeight, 0]);
+  let x = d3.scaleLinear().range([0, chartWidth]);
+  let y = d3.scaleBand().range([chartHeight, 0]);
   x.domain([0, maxVisits + 1]);
   y.domain(theaterCounts.map(d => d.key)).padding(0.1);
 
   //SVG Setup
-  var g = svg.attr("width", width)
+  let g = svg.attr("width", width)
       .attr("height", height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -324,7 +327,7 @@ function drawTheaterGraph(data, id, color, width, height, tooltip) {
    .enter()
      .append("g")
      .attr("class", "bar")
-     .attr("fill", d => color(d.key))
+     .attr("class", d => d.key)
    .selectAll("rect")
    .data(d => d)
    .enter()
@@ -333,9 +336,9 @@ function drawTheaterGraph(data, id, color, width, height, tooltip) {
      .attr("y", d => y(d.data.key))
      .attr("height", y.bandwidth())
      .attr("width", d => x(d[1]) - x(d[0]))
-     .on("mouseout",  d => hideTooltip(tooltip))
+     .on("mouseout",  () => hideTooltip(tooltip))
      .on("mouseover", d => {
-       var text = "<span style=\"font-weight: 900;\">" + d.data.key + ":</span> Visited " +
+       let text = "<span style=\"font-weight: 900;\">" + d.data.key + ":</span> Visited " +
                   (d[1] - d[0]) + " time(s) with this service";
        updateTooltip(tooltip, d3.event.pageX, d3.event.pageY, text);
        showTooltip(tooltip);
@@ -343,27 +346,27 @@ function drawTheaterGraph(data, id, color, width, height, tooltip) {
 }
 
 //Draw a chart of profits
-function drawProfitGraph(data, id, service, color, targetAmount, includeFees, width, height) {
-  var svg = d3.select(id),
+function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height) {
+  let svg = d3.select(id),
       margin = {top: 20, right: 20, bottom: 75, left: 20},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
-  var filteredData = data.filter(d => d.service === service);
-  var receivedAmount = filteredData.reduce((acc, val) => Number(val.price) + acc, 0);
-  var profitData = [{service: service, value: receivedAmount}];
+  let filteredData = data.filter(d => d.service === service);
+  let receivedAmount = filteredData.reduce((acc, val) => Number(val.price) + acc, 0);
+  let profitData = [{service: service, value: receivedAmount}];
 
-  var adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
+  let adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
 
   //Scales
-  var x = d3.scaleLinear().range([0, chartWidth]);
-  var y = d3.scaleBand().range([chartHeight, 0]);
+  let x = d3.scaleLinear().range([0, chartWidth]);
+  let y = d3.scaleBand().range([chartHeight, 0]);
 
   x.domain([-0.5, receivedAmount > adjustedTarget ? receivedAmount * 1.333 : adjustedTarget * 1.333]);
   y.domain([service]).padding(0.25);
 
   //SVG setup
-  var g = svg.attr("width", width)
+  let g = svg.attr("width", width)
              .attr("height", height)
              .append("g")
              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -376,15 +379,15 @@ function drawProfitGraph(data, id, service, color, targetAmount, includeFees, wi
         .tickSizeInner([-chartHeight])
         .ticks(1)
         .tickValues([adjustedTarget])
-        .tickFormat(d => d3.format("$,.2f")(d) + " on " + service + " subscription" + (includeFees ? " (including fees)" : "")));
+        .tickFormat(d => d3.format("$,.2f")(d) + " on " + serviceName + " subscription" + (includeFees ? " (including fees)" : "")));
   
   //Price bar
   g.selectAll(".bar")
       .data(profitData)
     .enter()
       .append("rect")
-      .attr("class",   "bar")
-      .attr("fill",    color)
+      .classed("bar", true)
+      .classed(service, true)
       .attr("x",       0)
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
@@ -399,7 +402,7 @@ function drawProfitGraph(data, id, service, color, targetAmount, includeFees, wi
       .attr("x", d => x(d.value) + 10)
       .attr("y", d => y(d.service) + (y.bandwidth() / 3))
       .attr("font-size", 12)
-      .text(d => d3.format("$,.2f")(d.value) + " in tickets from " + service);
+      .text(d => d3.format("$,.2f")(d.value) + " in tickets from " + serviceName);
 
   g.selectAll(".text")
     .data(profitData)
@@ -419,11 +422,12 @@ function drawProfitGraph(data, id, service, color, targetAmount, includeFees, wi
 ////////////////////////////////////////
 
 function updateTooltipForMovie(tooltip, movie, xPos, yPos) {
-  var dateDiffMessage;
-  if(movie.dateDiff < -1) {
+  let dateDiffMessage;
+  if(!movie.firstRun) {
+    dateDiffMessage = "";
+  } else if(movie.dateDiff < -1) {
     dateDiffMessage = "<br/>(" + -movie.dateDiff + " days before widest release)";
-  }
-  else if(movie.dateDiff === -1) {
+  } else if(movie.dateDiff === -1) {
     dateDiffMessage = "<br/>(Thursday preview)";
   } else if(movie.dateDiff === 0) {
     dateDiffMessage = "<br/>(Opening night)";
@@ -431,7 +435,7 @@ function updateTooltipForMovie(tooltip, movie, xPos, yPos) {
     dateDiffMessage = "<br/>(" + movie.dateDiff + " days after release)";
   }
 
-  var movieTooltipHtml =
+  let movieTooltipHtml =
     "<div style=\"display:flex; flex-direction:column;\">" +
       "<span style=\"font-size:1.5em;text-align:center;margin-bottom:10px;\">" + movie.movie + "</span>" +
       "<div style=\"display:flex\";>" +
@@ -444,7 +448,7 @@ function updateTooltipForMovie(tooltip, movie, xPos, yPos) {
           "<span style=\"font-weight: 900;\">THEATER: </span>" + movie.theater + "<br/>" +
           (movie.theaterNumber === "" ? "<br/>" : "<span style=\"font-weight: 900;\">THEATER NUMBER: </span>" + movie.theaterNumber + "<br><br>") +
           "<span style=\"font-weight: 900;\">PRICE: </span>" + d3.format("$,.2f")(movie.price) + "<br>" +
-          "<span style=\"font-weight: 900;\">SERVICE?: </span>" + movie.service + "<br>" +
+          "<span style=\"font-weight: 900;\">SERVICE?: </span>" + movie.serviceName + "<br>" +
           "<span style=\"font-weight: 900;\">PREMIUM SCREENING?: </span>" + movie.premium + "<br><br>" +
           (movie.notes === "" ? "" : "<span style=\"font-weight: 900;\">NOTES: </span>" + movie.notes) +
         "</div>" +
@@ -473,7 +477,7 @@ function hideTooltip(tooltip) {
 }
 
 function pathMonth(t0, cellSize) {
-  var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
+  let t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
     d0 = t0.getDay(), w0 = d3.timeWeek.count(d3.timeYear(t0), t0),
     d1 = t1.getDay(), w1 = d3.timeWeek.count(d3.timeYear(t1), t1);
   return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize

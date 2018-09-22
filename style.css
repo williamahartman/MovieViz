@@ -1,0 +1,106 @@
+/* General page style stuff */
+.section {
+  margin-top: 50px; 
+  margin-bottom: 75px;
+}
+
+.section-small {
+  margin-top: 50px; 
+  margin-bottom: 50px;
+}
+
+.chart-caption {
+  font-size: 0.75em;
+  text-align: center;
+  width: 75%;
+  margin: 20px auto auto auto;
+}
+
+div.tooltip {
+  position: absolute;
+  width: 320px;
+  text-align: left;
+  padding: 7px;
+  font: 10px sans-serif;
+  line-height: 1.6;
+  background: #002b36;
+  pointer-events: none;
+}
+
+
+/* Service color definitions */
+.service-moviepass {
+  fill: #d33682;
+  color: #d33682;
+}
+
+.service-sinemia {
+  fill: #2aa198;
+  color: #2aa198;
+}
+
+.service-free-tickets {
+  fill: #859900;
+  color: #859900;
+}
+
+.service-gift {
+  fill: #b58900;
+  color: #b58900;
+}
+
+.service-snuck-in {
+  fill: #6c71c4;
+  color: #6c71c4;
+}
+
+.service-none {
+  fill: #586e75;
+  color: #586e75;
+}
+
+.darker {
+  filter: brightness(66%);
+}
+
+
+/* Premium-radius definitions */
+.premium {
+  -webkit-mask: url(stripe.png) center;
+  mask: url(stripe.png) center;
+}
+
+
+/* Graph styles */
+.xaxis line{
+  stroke-width: 0.5px;
+  stroke: #586e75;
+}
+
+.xaxis path{
+  stroke-width: 0.5px;
+  stroke: #586e75;
+}
+
+.xaxis text{
+  fill: #93a1a1ed;
+}
+
+.yaxis line{
+  stroke-width: 0.5px;
+  stroke: #586e75;
+}
+
+.yaxis path{
+  stroke-width: 0.5px;
+  stroke: #586e75;
+}
+
+.yaxis text{
+  fill: #93a1a1ed;
+}
+
+.tick line {
+  stroke-width: 0.5px;
+  stroke: #586e75;
+}
