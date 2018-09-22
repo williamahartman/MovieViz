@@ -63,11 +63,10 @@ div.tooltip {
   filter: brightness(66%);
 }
 
-
-/* Premium-radius definitions */
+/* Strip-y thing from premium movies */
 .premium {
-  -webkit-mask: url(stripe.png) center;
-  mask: url(stripe.png) center;
+  -webkit-mask-image: url(stripe.svg);
+  mask-image: url(stripe.svg);
 }
 
 

@@ -198,15 +198,13 @@ a:visited {
 a:hover {
   color: #cb4b16;
 }
-h1 {
-  color: #d33682;
-}
+h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  color: #859900;
+  color: #d33682;
 }
 pre {
   background-color: #002b36;

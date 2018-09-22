@@ -8,28 +8,25 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js'></script>
 <body>
   <div class="section-small">
-    <h1>Movie Theater Data Since 2017</h1>
+    <h1>Movie Theater Data</h1>
     <p style="font-size:0.85em">
-        I started using MoviePass a little while ago, so I've seen a lot of movies in that past year. With the service falling apart, 
-        I thought it would be fun to take a look at the data on all the movies I saw in theaters.
+        I started using MoviePass a little while ago, so I've been going to the theater a lot. With the service falling apart, 
+        I thought it would be fun to take a look at the data on the movies I saw.
         <br><br>
         The data is visualized with <a href="https://d3js.org/">D3</a>. All the data is pulled directly from a 
         <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a> 
-        with <a href="https://github.com/jsoma/tabletop">Tabletop.js</a> on page load. Some of the data in the sheet comes from 
-        <a href="http://www.omdbapi.com/">OMDb</a>, but most of it is stuff I entered myself with a Google Form. With this setup, 
-        anytime I add a new movie to the spreadsheet, the viz stays up to date.
-        <br><br>
-        I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> 
+        with <a href="https://github.com/jsoma/tabletop">Tabletop.js</a> on page load. Some of the data comes from 
+        <a href="http://www.omdbapi.com/">OMDb</a>. I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> 
         <a href="https://beta.observablehq.com/@mbostock/d3-calendar-view">projects</a> for the calendar chart and 
         <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the stacked bar chart. 
-        I used <a href="http://thomasf.github.io/solarized-css/">this CSS</a> for the Solarized Dark color scheme.
+        I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color scheme.
     </p>
   </div>
   <div id="text-stats" class="section-small">
-    <h1>General Statistics</h1>
+    <h2>General Statistics</h1>
   </div>
   <div class="section">
-    <h1>Movies by Day</h1>
+    <h2>Movies by Day</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
@@ -48,7 +45,7 @@
     </p>
   </div>
   <div class="section">
-    <h1>Distance Between Release Date and View Date</h1>
+    <h2>Distance Between Release Date and View Date</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
@@ -67,7 +64,7 @@
     </p>
   </div>
   <div class="section">
-    <h1>Theater Visits by Service</h1>
+    <h2>Theater Visits by Service</h1>
     <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
@@ -86,11 +83,11 @@
     </p>
   </div>
   <div class="section-small">
-    <h1>Sinemia Profitability</h1>
+    <h2>Sinemia Profitability</h1>
     <svg id="sinemia-profit-graph"></svg>
   </div>
   <div class="section-small">
-    <h1>MoviePass Profitability</h1>
+    <h2>MoviePass Profitability</h1>
     <svg id="moviepass-profit-graph"></svg>
   </div>
   <script src="charts.js"></script>
