@@ -17,12 +17,15 @@ function drawGraphs(data, tabletop) {
     d.releaseDate = moment(d.releaseDate, "DD MMM YYYY")
     d.dateDiff = moment(d.date, "MM/D/YYYY").diff(d.releaseDate, "days");
     d.firstRun = d.firstRun === "Yes";
-    d.isPremium = d.premium === "No" ? "non-premium" : "premium";
+    d.isPremium = d.premium !== "No";
     d.serviceName = d.service;
     d.service = "service-" + d.service.toLowerCase().replace(" ", "-")
     return d;
   });
   console.log(data);
+
+  //Generate the hatched patterned fills for each service
+  genPatternedFills(data);
 
   //Figure out year range
   firstYear = d3.min(data, d => moment(d.date).year());
@@ -126,8 +129,8 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
   data.forEach(datum => {
     let sameDayMovies = data.filter(d => moment(d.date).isSame(datum.date));
     rect.filter(d => moment(datum.date).isSame(d, "day"))
-        .classed(datum.service, true)
-        .classed(datum.isPremium, true)
+        .classed(datum.service, !datum.isPremium)
+        .attr("fill", () => "url(#" + datum.service + "-stripe)")
         .on("mouseout",  () => hideTooltip(tooltip))
         .on("mouseover", () => {
           updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
@@ -199,7 +202,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
        .attr("font-size",   14)
        .attr("text-anchor", "middle")
        .attr("fill",        "#eee8d5")
-       .classed("double-feature", true)
+       .classed("double-feature-text", true)
        .text(d => {
          let numMovies = data.filter(datum => moment(datum.date).isSame(d, "day")).length;
          return numMovies > 1 ? numMovies : "";
@@ -268,12 +271,17 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
       .data(filteredData)
     .enter()
       .append("rect")
-      .classed("bar", true)
-      .classed("darker", moviesAdded.find(m => m.movie === d.movie && m.service === d.service))
+      .attr("fill", d => "url(#" + d.service + "-stripe)")
       .attr("class",  d => {
-        moviesAdded.push(d);
-        return d.service + " " + d.isPremium;
+        let darker = "";
+        if(moviesAdded.find(m => m.movie === d.movie && m.service === d.service)) {
+          darker = "darker";
+        } else {
+          moviesAdded.push(d);
+        }
+        return (d.isPremium ? "" : d.service + " ") + darker;
       })
+      .classed("bar", true)
       .attr("x",  d => d.dateDiff > 0 ? x(0) : d.dateDiff === 0 ? x(-0.25) : x(d.dateDiff))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.movieGraph))
@@ -294,12 +302,7 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
-  serviceList = [];
-  data.forEach(d => {
-    if(!serviceList.includes(d.service)) {
-      serviceList.push(d.service);
-    }
-  })
+  serviceList = getServiceList(data);
   serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
 
   //Data processing
@@ -449,6 +452,35 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   ////////////////////////////////////////
  //      TOOLTIP/UTILITY FUNCTIONS     //
 ////////////////////////////////////////
+
+function genPatternedFills(data) {
+  getServiceList(data).forEach(s => {
+    let fill = "<defs>" +
+                 "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
+                   "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
+                     "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
+                     "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"1\"/>" +
+                   "</svg>" +
+                 "</pattern>" +
+               "</defs>";
+               
+    d3.select("body")
+      .append("svg")
+      .attr("width",  5)
+      .attr("height", 5)
+      .html(fill);
+  })
+}
+
+function getServiceList(data) {
+  serviceList = [];
+  data.forEach(d => {
+    if(!serviceList.includes(d.service)) {
+      serviceList.push(d.service);
+    }
+  })
+  return serviceList;
+}
 
 function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
   let movieTooltipHtml = "";

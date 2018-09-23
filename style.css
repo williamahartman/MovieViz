@@ -1,3 +1,14 @@
+/* Color definitions */
+:root {
+  --moviepass-color: #d33682;
+  --sinemia-color: #2aa198;
+  --free-tickets-color: #859900;
+  --gift-color: #b58900;
+  --snuck-in-color: #6c71c4;
+  --none-color: #586e75;
+}
+
+
 /* General page style stuff */
 .section {
   margin-top: 50px; 
@@ -28,47 +39,59 @@ div.tooltip {
 }
 
 
-/* Service color definitions */
+/* Per-service color stuff */
 .service-moviepass {
-  fill: #d33682;
-  color: #d33682;
+  fill: var(--moviepass-color);
+  color: var(--moviepass-color);
+}
+.service-moviepass-hatch {
+  stroke: var(--moviepass-color);
 }
 
 .service-sinemia {
-  fill: #2aa198;
-  color: #2aa198;
+  fill: var(--sinemia-color);
+  color: var(--sinemia-color);
+}
+.service-sinemia-hatch {
+  stroke: var(--sinemia-color);
 }
 
 .service-free-tickets {
-  fill: #859900;
-  color: #859900;
+  fill: var(--free-tickets-color);
+  color: var(--free-tickets-color);
+}
+.service-free-tickets-hatch {
+  stroke: var(--free-tickets-color);
 }
 
 .service-gift {
-  fill: #b58900;
-  color: #b58900;
+  fill: var(--gift-color);
+  color: var(--gift-color);
+}
+.service-gift-hatch {
+  stroke: var(--gift-color);
 }
 
 .service-snuck-in {
-  fill: #6c71c4;
-  color: #6c71c4;
+  fill: var(--snuck-in-color);
+  color: var(--snuck-in-color);
+}
+.service-snuck-in-hatch {
+  stroke: var(--snuck-in-color);
 }
 
 .service-none {
-  fill: #586e75;
-  color: #586e75;
+  fill: var(--none-color);
+  color: var(--none-color);
+}
+.service-none-hatch {
+  stroke: var(--none-color);
 }
 
+/* SVG filter for darkening elements */
 .darker {
-  filter: brightness(66%);
+  filter: url(#darker);
 }
-
-/* Strip-y thing from premium movies */
-.premium {
-  -webkit-mask-image: url(stripe.svg);
-  mask-image: url(stripe.svg);
-}
-
 
 /* Graph styles */
 .xaxis line{
@@ -104,7 +127,7 @@ div.tooltip {
   stroke: #586e75;
 }
 
-.double-feature {
+.double-feature-text {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
