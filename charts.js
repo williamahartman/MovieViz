@@ -1,12 +1,12 @@
 //Load data from spreadsheet and draw graphs
-let public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
+const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
 Tabletop.init({ key: public_spreadsheet_url,
                 callback: drawGraphs,
                 simpleSheet: true });
             
 function drawGraphs(data, tabletop) {
   // Define the div for the tooltip
-  let tooltipDiv = d3.select("body")
+  const tooltipDiv = d3.select("body")
                      .append("div")
                      .attr("class",    "tooltip")
                      .style("opacity", 0);
@@ -28,8 +28,8 @@ function drawGraphs(data, tabletop) {
   genPatternedFills(data);
 
   //Figure out year range
-  firstYear = d3.min(data, d => moment(d.date).year());
-  lastYear =  d3.max(data, d => moment(d.date).year());
+  const firstYear = d3.min(data, d => moment(d.date).year());
+  const lastYear =  d3.max(data, d => moment(d.date).year());
 
   //Draw Charts
   drawTextStats(data, firstYear, "#text-stats");
@@ -41,13 +41,13 @@ function drawGraphs(data, tabletop) {
 }
 
 function drawTextStats(data, startYear, id) {
-  let numMovies = data.length;
-  let numNoService = data.filter(d => d.service === "service-none").length;
-  let numMoviepass = data.filter(d => d.service === "service-moviepass").length;
-  let numSinemia = data.filter(d => d.service === "service-sinemia").length;
-  let numFree = data.filter(d => d.service === "service-free-tickets").length;
-  let numGift = data.filter(d => d.service === "service-gift").length;
-  let numSneak = data.filter(d => d.service === "service-snuck-in").length;
+  const numMovies = data.length;
+  const numNoService = data.filter(d => d.service === "service-none").length;
+  const numMoviepass = data.filter(d => d.service === "service-moviepass").length;
+  const numSinemia = data.filter(d => d.service === "service-sinemia").length;
+  const numFree = data.filter(d => d.service === "service-free-tickets").length;
+  const numGift = data.filter(d => d.service === "service-gift").length;
+  const numSneak = data.filter(d => d.service === "service-snuck-in").length;
 
   d3.select(id)
     .append("p")
@@ -100,7 +100,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   //SVG for the chart
-  let svg = d3.select(id)
+  const svg = d3.select(id)
               .attr("class", "calendar-chart")
               .selectAll("svg")
               .data(yearRange)
@@ -112,7 +112,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
   // Days
-  let rect = svg.append("g")
+  const rect = svg.append("g")
                 .attr("fill",   "#073642")
                 .attr("stroke", "#002b36")
                 .selectAll("rect")
@@ -218,35 +218,35 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
 //Draw a chart of movie date distances
 function drawDateDiffBarGraph(data, id, width, height, tooltip) {
-  let svg = d3.select(id),
+  const svg = d3.select(id),
       margin = {top: 20, right: 20, bottom: 30, left: 150},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
   //Sort and filter data, find min/max
   data.sort((a, b) => b.dateDiff - a.dateDiff);
-  let filteredData = data.filter(d => d.firstRun)
+  const filteredData = data.filter(d => d.firstRun)
                          .map(d => {
                            d.movieGraph = d.movie.length > 25 ? d.movie.substring(0,25)+"..." : d.movie;
                            return d;
                          });
-  let minDiff = d3.min(filteredData, d => d.dateDiff);
-  let maxDiff = d3.max(filteredData, d => d.dateDiff);
+  const minDiff = d3.min(filteredData, d => d.dateDiff);
+  const maxDiff = d3.max(filteredData, d => d.dateDiff);
     
   //Scales
-  let x = d3.scaleLinear().range([0, chartWidth]);
-  let y = d3.scaleBand().range([chartHeight, 0]);
+  const x = d3.scaleLinear().range([0, chartWidth]);
+  const y = d3.scaleBand().range([chartHeight, 0]);
   x.domain([minDiff, maxDiff + 5]);
   y.domain(filteredData.map(d => d.movieGraph)).padding(0.1);
 
   //SVG setup
-  let g = svg.attr("width", width)
+  const g = svg.attr("width", width)
       .attr("height", height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   //X-axis
-  let ticks = [];
+  const ticks = [];
   let i = 0;
   for(i = minDiff; i <= maxDiff + 5; i++) {
     if(i % 7 == 0) {
@@ -266,7 +266,7 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
       .call(d3.axisLeft(y));
   
   //Date diff bars
-  let moviesAdded = []
+  const moviesAdded = []
   g.selectAll(".bar")
       .data(filteredData)
     .enter()
@@ -297,7 +297,7 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
 
 //Draw a graph of theater counts
 function drawTheaterGraph(data, id, width, height, tooltip) {
-  let svg = d3.select(id),
+  const svg = d3.select(id),
       margin = {top: 20, right: 20, bottom: 30, left: 180},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
@@ -306,15 +306,15 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
   serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
 
   //Data processing
-  let theaterCounts = d3.nest()
-                        .key(d => d.theater)
-                        .key(d => d.service)
-                        .rollup(v => v.length)
-                        .entries(data);
+  const theaterCounts = d3.nest()
+                          .key(d => d.theater)
+                          .key(d => d.service)
+                          .rollup(v => v.length)
+                          .entries(data);
   
   theaterCounts.map(d => {
-    let zeroOrService = s => {
-      let service = d.values.find(v => v.key === s);
+    const zeroOrService = s => {
+      const service = d.values.find(v => v.key === s);
       return service ? service.value : 0;
     };
     serviceList.forEach(c => d[c] = zeroOrService(c))
@@ -322,20 +322,20 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
     return d;
   });
 
-  let getNumVisits = m => serviceList.reduce((acc, service) => m[service] + acc, 0);
+  const getNumVisits = m => serviceList.reduce((acc, service) => m[service] + acc, 0);
   theaterCounts.sort((a, b) => getNumVisits(b) - getNumVisits(a));
 
-  let maxVisits = d3.max(theaterCounts, d => getNumVisits(d));
-  let stack = d3.stack().keys(serviceList)(theaterCounts);
+  const maxVisits = d3.max(theaterCounts, d => getNumVisits(d));
+  const stack = d3.stack().keys(serviceList)(theaterCounts);
 
   //Scales
-  let x = d3.scaleLinear().range([0, chartWidth]);
-  let y = d3.scaleBand().range([chartHeight, 0]);
+  const x = d3.scaleLinear().range([0, chartWidth]);
+  const y = d3.scaleBand().range([chartHeight, 0]);
   x.domain([0, maxVisits + 1]);
   y.domain(theaterCounts.map(d => d.key)).padding(0.1);
 
   //SVG Setup
-  let g = svg.attr("width", width)
+  const g = svg.attr("width", width)
       .attr("height", height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -379,29 +379,29 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
 
 //Draw a chart of profits
 function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height) {
-  let svg = d3.select(id),
-      margin = {top: 20, right: 20, bottom: 75, left: 20},
-      chartWidth = width - margin.left - margin.right,
-      chartHeight = height - margin.top - margin.bottom;
+  const svg = d3.select(id),
+        margin = {top: 20, right: 20, bottom: 75, left: 20},
+        chartWidth = width - margin.left - margin.right,
+        chartHeight = height - margin.top - margin.bottom;
 
-  let filteredData = data.filter(d => d.service === service);
-  let receivedAmount = filteredData.reduce((acc, val) => Number(val.price) + acc, 0);
-  let profitData = [{service: service, value: receivedAmount}];
+  const filteredData = data.filter(d => d.service === service);
+  const receivedAmount = filteredData.reduce((acc, val) => Number(val.price) + acc, 0);
+  const profitData = [{service: service, value: receivedAmount}];
 
-  let adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
+  const adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
 
   //Scales
-  let x = d3.scaleLinear().range([0, chartWidth]);
-  let y = d3.scaleBand().range([chartHeight, 0]);
+  const x = d3.scaleLinear().range([0, chartWidth]);
+  const y = d3.scaleBand().range([chartHeight, 0]);
 
   x.domain([-0.5, receivedAmount > adjustedTarget ? receivedAmount * 1.333 : adjustedTarget * 1.333]);
   y.domain([service]).padding(0.25);
 
   //SVG setup
-  let g = svg.attr("width", width)
-             .attr("height", height)
-             .append("g")
-             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  const g = svg.attr("width", width)
+               .attr("height", height)
+               .append("g")
+               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   //X axis
   g.append("g")
@@ -455,15 +455,14 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
 
 function genPatternedFills(data) {
   getServiceList(data).forEach(s => {
-    let fill = "<defs>" +
-                 "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
-                   "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
-                     "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
-                     "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"1\"/>" +
-                   "</svg>" +
-                 "</pattern>" +
-               "</defs>";
-               
+    const fill = "<defs>" +
+                   "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
+                     "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
+                       "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
+                       "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"1\"/>" +
+                     "</svg>" +
+                   "</pattern>" +
+                 "</defs>";
     d3.select("body")
       .append("svg")
       .attr("width",  5)
@@ -473,7 +472,7 @@ function genPatternedFills(data) {
 }
 
 function getServiceList(data) {
-  serviceList = [];
+  const serviceList = [];
   data.forEach(d => {
     if(!serviceList.includes(d.service)) {
       serviceList.push(d.service);
@@ -542,9 +541,11 @@ function hideTooltip(tooltip) {
 }
 
 function pathMonth(t0, cellSize) {
-  let t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
-    d0 = t0.getDay(), w0 = d3.timeWeek.count(d3.timeYear(t0), t0),
-    d1 = t1.getDay(), w1 = d3.timeWeek.count(d3.timeYear(t1), t1);
+  const t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
+        d0 = t0.getDay(), 
+        w0 = d3.timeWeek.count(d3.timeYear(t0), t0),
+        d1 = t1.getDay(), 
+        w1 = d3.timeWeek.count(d3.timeYear(t1), t1);
   return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize
     + "H" + w0 * cellSize + "V" + 7 * cellSize
     + "H" + w1 * cellSize + "V" + (d1 + 1) * cellSize
