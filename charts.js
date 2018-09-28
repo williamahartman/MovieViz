@@ -302,37 +302,30 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
-  serviceList = getServiceList(data);
-  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
-
   //Data processing
-  const theaterCounts = d3.nest()
-                          .key(d => d.theater)
-                          .key(d => d.service)
-                          .rollup(v => v.length)
-                          .entries(data);
-  
-  theaterCounts.map(d => {
-    const zeroOrService = s => {
-      const service = d.values.find(v => v.key === s);
-      return service ? service.value : 0;
-    };
-    serviceList.forEach(c => d[c] = zeroOrService(c))
-    delete d.values;
-    return d;
+  const serviceList = getServiceList(data);
+  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
+  const theaterList = getTheaterList(data);
+  theaterList.sort((a, b) => data.filter(d => b === d.theater).length - data.filter(d => a === d.theater).length);
+  data.sort((a, b) => {
+    const aToNum = (1000000000 * serviceList.findIndex(d => d === a.service)) + (moment(a.date).unix()); 
+    const bToNum = (1000000000 * serviceList.findIndex(d => d === b.service)) + (moment(b.date).unix());
+    return aToNum - bToNum;
   });
-
-  const getNumVisits = m => serviceList.reduce((acc, service) => m[service] + acc, 0);
-  theaterCounts.sort((a, b) => getNumVisits(b) - getNumVisits(a));
-
-  const maxVisits = d3.max(theaterCounts, d => getNumVisits(d));
-  const stack = d3.stack().keys(serviceList)(theaterCounts);
+  const theaterTally = []
+  theaterList.forEach(() => theaterTally.push(0));
+  data.forEach(d => {
+    const serviceIndex = theaterList.findIndex(t => t === d.theater);
+    d.theaterGraphPos = theaterTally[serviceIndex];
+    theaterTally[serviceIndex]++;
+  })
+  const maxVisits = d3.max(theaterTally);
 
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
   const y = d3.scaleBand().range([chartHeight, 0]);
   x.domain([0, maxVisits + 1]);
-  y.domain(theaterCounts.map(d => d.key)).padding(0.1);
+  y.domain(theaterList).padding(0.1);
 
   //SVG Setup
   const g = svg.attr("width", width)
@@ -355,24 +348,20 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
 
   //Stacked bars
   g.selectAll(".bar")
-   .data(stack)
-   .enter()
-     .append("g")
-     .attr("class", "bar")
-     .attr("class", d => d.key)
-   .selectAll("rect")
-   .data(d => d)
+    .data(data)
    .enter()
      .append("rect")
-     .attr("x", d => x(d[0]))
-     .attr("y", d => y(d.data.key))
+     .attr("fill", d => "url(#" + d.service + "-stripe)")
+     .attr("class", "bar")
+     .attr("class", d => d.isPremium ? "" : d.service)
+     .attr("x", d => x(d.theaterGraphPos))
+     .attr("y", d => y(d.theater))
      .attr("height", y.bandwidth())
-     .attr("width", d => x(d[1]) - x(d[0]))
+     .attr("width", () => x(1) - 0.5)
+     .on("mouseout",  () => hideTooltip(tooltip))
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mouseover", d => {
-       let text = "<span style=\"font-weight: 900;\">" + d.data.key + ":</span> Visited " +
-                  (d[1] - d[0]) + " time(s) with this service";
-       updateTooltip(tooltip, d3.event.pageX, d3.event.pageY, text);
+       updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
        showTooltip(tooltip);
      });
 }
@@ -479,6 +468,16 @@ function getServiceList(data) {
     }
   })
   return serviceList;
+}
+
+function getTheaterList(data) {
+  const theaterList = [];
+  data.forEach(d => {
+    if(!theaterList.includes(d.theater)) {
+      theaterList.push(d.theater);
+    }
+  })
+  return theaterList;
 }
 
 function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
