@@ -134,8 +134,9 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => "url(#" + datum.service + "-stripe)")
         .on("mouseout",  () => hideTooltip(tooltip))
-        .on("mouseover", () => {
-          updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
+        .on("mousemove", d => updateTooltipForMovie(tooltip, [datum], d3.event.pageX, d3.event.pageY))
+        .on("mouseover", d => {
+          updateTooltipForMovie(tooltip, [datum], d3.event.pageX, d3.event.pageY);
           showTooltip(tooltip);
         });
 
@@ -208,13 +209,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
        .text(d => {
          let numMovies = data.filter(datum => moment(datum.date).isSame(d, "day")).length;
          return numMovies > 1 ? numMovies : "";
-       })
-       .on("mouseout",  () => hideTooltip(tooltip))
-       .on("mouseover", d => {
-         let sameDayMovies = data.filter(datum => moment(datum.date).isSame(d, "day"));
-         updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
-         showTooltip(tooltip);
-       });;
+       });
 
 }
 
@@ -291,6 +286,7 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
         return d.dateDiff == 0 ? x(0.5) - x(0) : Math.abs(x(d.dateDiff) - x(0)); 
       })
       .on("mouseout",  () => hideTooltip(tooltip))
+      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
         showTooltip(tooltip);
@@ -361,7 +357,7 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
      .attr("height", y.bandwidth())
      .attr("width", () => x(1) - 0.5)
      .on("mouseout",  () => hideTooltip(tooltip))
-     .on("mouseout",  () => hideTooltip(tooltip))
+     .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
        showTooltip(tooltip);
@@ -422,6 +418,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("y",       d => y(d.service))
       .attr("width",   d => x(d.price + (includeFees ? d.fees : 0)) - 0.5)
       .on("mouseout",  () => hideTooltip(tooltip))
+      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
         showTooltip(tooltip);
@@ -535,21 +532,36 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
 }
 
 function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
-  tooltip.html(toolTipHtml)
-         .style("left", xPos + "px")
-         .style("top", yPos + "px");
+  tooltip.html(toolTipHtml);
+
+  const tooltipWidth =   tooltip.node().clientWidth;
+  const tooltipHeight =  tooltip.node().clientHeight;
+  const documentWidth =  document.documentElement.scrollWidth;
+  const documentHeight = window.scrollY + window.innerHeight;
+
+  var xPosCorrected = xPos;
+  if(xPos + tooltipWidth > documentWidth) {
+    xPosCorrected = documentWidth - tooltipWidth
+  }
+  var yPosCorrected = yPos;
+  if(yPos + tooltipHeight > documentHeight) {
+    yPosCorrected = documentHeight - tooltipHeight;
+  }
+
+  tooltip.style("left", xPosCorrected + "px")
+         .style("top",  yPosCorrected + "px");
 }
 
 function showTooltip(tooltip) {
   tooltip.transition()
-      .duration(200)
-      .style("opacity", .9);
+         .duration(200)
+         .style("opacity", .95);
 }
 
 function hideTooltip(tooltip) {
   tooltip.transition()
-      .duration(250)
-      .style("opacity", 0);
+         .duration(200)
+         .style("opacity", 0);
 }
 
 function pathMonth(t0, cellSize) {
