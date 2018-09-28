@@ -20,6 +20,8 @@ function drawGraphs(data, tabletop) {
     d.isPremium = d.premium !== "No";
     d.serviceName = d.service;
     d.service = "service-" + d.service.toLowerCase().replace(" ", "-")
+    d.price = +d.price;
+    d.fees = +d.fees;
     return d;
   });
   console.log(data);
@@ -36,8 +38,8 @@ function drawGraphs(data, tabletop) {
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, 600, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, 250, tooltipDiv);
-  drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 175);
-  drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 175);
+  drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 130, tooltipDiv);
+  drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 130, tooltipDiv);
 }
 
 function drawTextStats(data, startYear, id) {
@@ -367,23 +369,28 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
 }
 
 //Draw a chart of profits
-function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height) {
+function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height, tooltip) {
   const svg = d3.select(id),
-        margin = {top: 20, right: 20, bottom: 75, left: 20},
+        margin = {top: 20, right: 20, bottom: 30, left: 20},
         chartWidth = width - margin.left - margin.right,
         chartHeight = height - margin.top - margin.bottom;
 
+  //Data Processing
   const filteredData = data.filter(d => d.service === service);
-  const receivedAmount = filteredData.reduce((acc, val) => Number(val.price) + acc, 0);
-  const profitData = [{service: service, value: receivedAmount}];
+  filteredData.sort((a, b) => moment(a.date).unix() - moment(b.date).unix())
 
+  var receivedAmount = 0;
+  filteredData.forEach(d => {
+    d.profitGraphPos = receivedAmount;
+    receivedAmount += d.price + (includeFees ? d.fees : 0);
+  });
+  const profitData = [{service: service, value: receivedAmount}];
   const adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
 
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
   const y = d3.scaleBand().range([chartHeight, 0]);
-
-  x.domain([-0.5, receivedAmount > adjustedTarget ? receivedAmount * 1.333 : adjustedTarget * 1.333]);
+  x.domain([0, receivedAmount > adjustedTarget ? receivedAmount * 1.333 : adjustedTarget * 1.333]);
   y.domain([service]).padding(0.25);
 
   //SVG setup
@@ -404,15 +411,21 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   
   //Price bar
   g.selectAll(".bar")
-      .data(profitData)
+      .data(filteredData)
     .enter()
       .append("rect")
-      .classed("bar", true)
-      .classed(service, true)
-      .attr("x",       0)
+      .attr("fill", d => "url(#" + d.service + "-stripe)")
+      .attr("class", "bar")
+      .attr("class", d => d.isPremium ? "" : d.service)
+      .attr("x",       d => x(d.profitGraphPos))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
-      .attr("width",   d => x(d.value));
+      .attr("width",   d => x(d.price + (includeFees ? d.fees : 0)) - 0.5)
+      .on("mouseout",  () => hideTooltip(tooltip))
+      .on("mouseover", d => {
+        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+        showTooltip(tooltip);
+      });
 
   //Text at end of bar
   g.selectAll(".text")
