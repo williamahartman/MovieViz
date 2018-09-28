@@ -134,9 +134,9 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => "url(#" + datum.service + "-stripe)")
         .on("mouseout",  () => hideTooltip(tooltip))
-        .on("mousemove", d => updateTooltipForMovie(tooltip, [datum], d3.event.pageX, d3.event.pageY))
+        .on("mousemove", d => updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY))
         .on("mouseover", d => {
-          updateTooltipForMovie(tooltip, [datum], d3.event.pageX, d3.event.pageY);
+          updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
           showTooltip(tooltip);
         });
 
