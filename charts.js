@@ -509,7 +509,11 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
 
     movieTooltipHtml +=
       "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
-        "<span style=\"font-size:1.5em;text-align:center;margin-bottom:7px;\">" + d.movie + "</span>" +
+        "<span style=\"font-size:1.5em;text-align:center;margin-bottom:7px;\">" + 
+          d.movie + 
+          "<br>" +
+          numToStars(d.rating) +
+        "</span>" +
         "<div style=\"display:flex\";>" +
           "<div>" +
             "<img src=\"" + d.posterUrl + "\" style=\"width:100px;margin-right:10px;\">" +
@@ -529,6 +533,21 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
   });
 
   updateTooltip(tooltip, xPos, yPos, movieTooltipHtml);
+}
+
+function numToStars(rating) {
+  let starStr = "";
+
+  while(rating >= 1) {
+    starStr += "★";
+    rating--;
+  }
+
+  if(rating > 0) {
+    starStr += "½";
+  }
+
+  return starStr;
 }
 
 function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
