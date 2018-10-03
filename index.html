@@ -16,8 +16,9 @@
         The charts were made with <a href="https://d3js.org/">D3</a>. All the data is pulled directly from a 
         <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a> 
         with <a href="https://github.com/jsoma/tabletop">Tabletop.js</a> on page load. Some of the data comes from 
-        <a href="http://www.omdbapi.com/">OMDb</a>. I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> 
-        <a href="https://beta.observablehq.com/@mbostock/d3-calendar-view">projects</a> for the calendar chart and 
+        <a href="http://www.omdbapi.com/">OMDb.</a> Ratings from <a href=https://letterboxd.com/Nocut12/films> my Letterboxd account.</a> 
+        I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> <a href="https://beta.observablehq.com/@mbostock/d3-calendar-view">projects</a>
+        for the calendar chart and 
         <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the stacked bar chart. 
         I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color scheme. The hatched 
         fill was adapted from <a href="https://github.com/iros/patternfills"> this project.</a>
@@ -83,6 +84,27 @@
     <svg id="theater-graph"></svg>
     <p class="chart-caption">
       X-axis is number of visits. Premium showings have hatched bars.
+    </p>
+  </div>
+  <div class="section">
+    <h2>Movies by Rating</h1>
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
+      <tr>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
+      </tr>
+      <tr>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
+        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
+      </tr>
+    </table>
+    <svg id="ratings-graph" style="margin: auto"></svg>
+    <p class="chart-caption">
+      Ratings from <a href=https://letterboxd.com/Nocut12/films> my Letterboxd account.</a> Only the first viewing of each movie is shown.
+      <br>
+      Premium showings have hatched bars.
     </p>
   </div>
   <div class="section">

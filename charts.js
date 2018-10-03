@@ -22,6 +22,7 @@ function drawGraphs(data, tabletop) {
     d.service = "service-" + d.service.toLowerCase().replace(" ", "-")
     d.price = +d.price;
     d.fees = +d.fees;
+    d.rating = +d.rating;
     return d;
   });
   console.log(data);
@@ -38,6 +39,7 @@ function drawGraphs(data, tabletop) {
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, 600, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, 250, tooltipDiv);
+  drawRatingsGraph(data, "#ratings-graph", 500, 250, tooltipDiv);
   drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 130, tooltipDiv);
   drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 130, tooltipDiv);
 }
@@ -327,9 +329,9 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
 
   //SVG Setup
   const g = svg.attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+               .attr("height", height)
+               .append("g")
+               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   
   //X-axis
   g.append("g")
@@ -356,6 +358,80 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
      .attr("y", d => y(d.theater))
      .attr("height", y.bandwidth())
      .attr("width", () => x(1) - 0.5)
+     .on("mouseout",  () => hideTooltip(tooltip))
+     .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
+     .on("mouseover", d => {
+       updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+       showTooltip(tooltip);
+     });
+}
+
+//Draw a graph of ratings
+function drawRatingsGraph(data, id, width, height, tooltip) {
+  const svg = d3.select(id),
+      margin = {top: 20, right: 20, bottom: 30, left: 20},
+      chartWidth = width - margin.left - margin.right,
+      chartHeight = height - margin.top - margin.bottom;
+
+  //Data processing
+  const serviceList = getServiceList(data);
+  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
+  const ratingsList = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+  const filteredData = [];
+  data.sort((a, b) => a.date - b.date);
+  data.forEach((d) => {
+    var inData = filteredData.some(d2 => d2.movie === d.movie);
+    if(!inData) {
+      filteredData.push(d);
+    }
+  });
+
+  filteredData.sort((a, b) => {
+    const aToNum = (10 * serviceList.findIndex(d => d === a.service)) + (a.isPremium ? 1 : 0); 
+    const bToNum = (10 * serviceList.findIndex(d => d === b.service)) + (b.isPremium ? 1 : 0);
+    return aToNum - bToNum;
+  });
+
+  const ratingsTally = []
+  ratingsList.forEach(() => ratingsTally.push(0));
+  filteredData.forEach(d => {
+    const serviceIndex = ratingsList.findIndex(t => t === d.rating);
+    d.ratingsGraphPos = ratingsTally[serviceIndex];
+    ratingsTally[serviceIndex]++;
+  })
+  const maxRatings = d3.max(ratingsTally);
+
+  //Scales
+  const x = d3.scaleBand().range([chartWidth, 0]);
+  const y = d3.scaleLinear().range([0, chartHeight]);
+  x.domain(ratingsList.reverse()).padding(0.01);
+  y.domain([0, maxRatings]);
+
+  //SVG Setup
+  const g = svg.attr("width", width)
+               .attr("height", height)
+               .append("g")
+               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  //X-axis
+  g.append("g")
+   .attr("class", "xaxis")
+   .attr("transform", "translate(0," + chartHeight + ")")
+   .call(d3.axisBottom(x)
+     .tickFormat(d => numToStars(d)));
+
+  //Stacked bars
+  g.selectAll(".bar")
+    .data(filteredData)
+   .enter()
+     .append("rect")
+     .attr("fill", d => "url(#" + d.service + "-stripe)")
+     .attr("class", "bar")
+     .attr("class", d => d.isPremium ? "" : d.service)
+     .attr("y", d => chartHeight - y(d.ratingsGraphPos + 1))
+     .attr("x", d => x(d.rating))
+     .attr("width", x.bandwidth())
+     .attr("height", () => y(1) - 0.5)
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
