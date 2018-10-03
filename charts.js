@@ -39,7 +39,7 @@ function drawGraphs(data, tabletop) {
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, 600, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, 250, tooltipDiv);
-  drawRatingsGraph(data, "#ratings-graph", 500, 250, tooltipDiv);
+  drawRatingsGraph(data, "#ratings-graph", 885, 250, tooltipDiv);
   drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 130, tooltipDiv);
   drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 130, tooltipDiv);
 }
@@ -58,38 +58,38 @@ function drawTextStats(data, startYear, id) {
     .html(
       "<table style=\"border-collapse:collapse;text-align:left;\">" + 
         "<tr>" + 
-          "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px\">" + numMovies + "</td>" +
+          "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px;width:50px;\">" + numMovies + "</td>" +
           "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
       "</table>" +
-      "<div style=\"display: flex;\">" + 
-        "<table style=\"border-collapse:collapse;text-align:left;margin-right:50px\">" + 
+      "<div style=\"display:flex; flex-wrap:wrap;\">" + 
+        "<table style=\"border-collapse:collapse;text-align:left\">" + 
           "<tr>" + 
-            "<td class=\"service-none\" style=\"font-size:25px;text-align:right;\">" + numNoService + "</td>" +
+            "<td class=\"service-none\" style=\"font-size:25px;text-align:right;50px;\">" + numNoService + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numNoService == 1 ? "ticket" : "tickets") + " paid for normally</td>" +
           "</tr>" + 
           "<tr>" + 
-            "<td class=\"service-snuck-in\" style=\"font-size:25px;text-align:right;\">" + numSneak + "</td>" +
+            "<td class=\"service-snuck-in\" style=\"font-size:25px;text-align:right;width:50px;\">" + numSneak + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numSneak == 1 ? "movie" : "movies") + " snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
           "</tr>" + 
         "</table>" +
-        "<table style=\"border-collapse:collapse;text-align:left;margin-right:50px\">" + 
+        "<table style=\"border-collapse:collapse;text-align:left\">" + 
           "<tr>" + 
-            "<td class=\"service-moviepass\" style=\"font-size:25px;text-align:right;\">" + numMoviepass + "</td>" +
+            "<td class=\"service-moviepass\" style=\"font-size:25px;text-align:right;width:50px;\">" + numMoviepass + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numMoviepass == 1 ? "ticket" : "tickets") + " from MoviePass</td>" +
           "</tr>" + 
           "<tr>" + 
-            "<td class=\"service-gift\" style=\"font-size:25px;text-align:right;\">" + numGift + "</td>" +
+            "<td class=\"service-gift\" style=\"font-size:25px;text-align:right;width:50px;\">" + numGift + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numGift == 1 ? "ticket" : "tickets") + " received as gifts</td>" +
           "</tr>" + 
         "</table>" +
-        "<table style=\"border-collapse:collapse;text-align:left;\">" +
+        "<table style=\"border-collapse:collapse;text-align:left\">" +
           "<tr>" + 
-            "<td class=\"service-sinemia\" style=\"font-size:25px;text-align:right;\">" + numSinemia + "</td>" +
+            "<td class=\"service-sinemia\" style=\"font-size:25px;text-align:right;width:50px;\">" + numSinemia + "</td>" +
             "<td style=\"padding-left:15px;\">" + (numSinemia == 1 ? "ticket" : "tickets") + " from Sinemia</td>" +
           "</tr>" + 
           "<tr>" + 
-            "<td class=\"service-free-tickets\" style=\"font-size:25px;text-align:right;\">" + numFree + "</td>" +
+            "<td class=\"service-free-tickets\" style=\"font-size:25px;text-align:right;width:50px;\">" + numFree + "</td>" +
             "<td style=\"padding-left:15px;\">free " + (numFree == 1 ? "ticket" : "tickets") + " (passes, promotions, etc.)</td>" +
           "</tr>" + 
         "</table>" +
@@ -105,13 +105,14 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   //SVG for the chart
   const svg = d3.select(id)
-              .attr("class", "calendar-chart")
+              .attr("class",  "calendar-chart")
               .selectAll("svg")
               .data(yearRange)
               .enter()
                 .append("svg")
-                .attr("width",  width)
-                .attr("height", height)
+                .attr("width",  "100%")
+                .attr("height", "auto")
+                .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
@@ -239,8 +240,9 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
   y.domain(filteredData.map(d => d.movieGraph)).padding(0.1);
 
   //SVG setup
-  const g = svg.attr("width", width)
-      .attr("height", height)
+  const g = svg.attr("width",  "100%")
+               .attr("height", "auto")
+               .attr("viewBox", "0 0 " + width + " " + height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -328,8 +330,9 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
   y.domain(theaterList).padding(0.1);
 
   //SVG Setup
-  const g = svg.attr("width", width)
-               .attr("height", height)
+  const g = svg.attr("width",  "100%")
+               .attr("height", "auto")
+               .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   
@@ -369,7 +372,7 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
 //Draw a graph of ratings
 function drawRatingsGraph(data, id, width, height, tooltip) {
   const svg = d3.select(id),
-      margin = {top: 20, right: 20, bottom: 30, left: 20},
+      margin = {top: 20, right: 150, bottom: 30, left: 150},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
@@ -408,8 +411,9 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
   y.domain([0, maxRatings]);
 
   //SVG Setup
-  const g = svg.attr("width", width)
-               .attr("height", height)
+  const g = svg.attr("width",  "100%")
+               .attr("height", "auto")
+               .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   
@@ -466,8 +470,9 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   y.domain([service]).padding(0.25);
 
   //SVG setup
-  const g = svg.attr("width", width)
-               .attr("height", height)
+  const g = svg.attr("width",  "100%")
+               .attr("height", "auto")
+               .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
