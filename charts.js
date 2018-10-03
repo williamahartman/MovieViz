@@ -39,7 +39,7 @@ function drawGraphs(data, tabletop) {
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, 600, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, 250, tooltipDiv);
-  drawRatingsGraph(data, "#ratings-graph", 885, 250, tooltipDiv);
+  drawRatingsGraph(data, "#ratings-graph", 885, 200, tooltipDiv);
   drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 130, tooltipDiv);
   drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 130, tooltipDiv);
 }
@@ -142,9 +142,6 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
           updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
           showTooltip(tooltip);
         });
-
-    if(sameDayMovies.length > 1) {
-    }
   });
 
   // Months
@@ -357,7 +354,7 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
      .attr("fill", d => "url(#" + d.service + "-stripe)")
      .attr("class", "bar")
      .attr("class", d => d.isPremium ? "" : d.service)
-     .attr("x", d => x(d.theaterGraphPos))
+     .attr("x", d => x(d.theaterGraphPos) + 0.25)
      .attr("y", d => y(d.theater))
      .attr("height", y.bandwidth())
      .attr("width", () => x(1) - 0.5)
@@ -372,7 +369,7 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
 //Draw a graph of ratings
 function drawRatingsGraph(data, id, width, height, tooltip) {
   const svg = d3.select(id),
-      margin = {top: 20, right: 150, bottom: 30, left: 150},
+      margin = {top: 20, right: 225, bottom: 30, left: 225},
       chartWidth = width - margin.left - margin.right,
       chartHeight = height - margin.top - margin.bottom;
 
@@ -407,7 +404,7 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
   //Scales
   const x = d3.scaleBand().range([chartWidth, 0]);
   const y = d3.scaleLinear().range([0, chartHeight]);
-  x.domain(ratingsList.reverse()).padding(0.01);
+  x.domain(ratingsList.reverse()).padding(0.025);
   y.domain([0, maxRatings]);
 
   //SVG Setup
@@ -422,7 +419,7 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
    .attr("class", "xaxis")
    .attr("transform", "translate(0," + chartHeight + ")")
    .call(d3.axisBottom(x)
-     .tickFormat(d => numToStars(d)));
+           .tickFormat(d => numToStars(d)));
 
   //Stacked bars
   g.selectAll(".bar")
@@ -447,7 +444,7 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
 //Draw a chart of profits
 function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height, tooltip) {
   const svg = d3.select(id),
-        margin = {top: 20, right: 20, bottom: 30, left: 20},
+        margin = {top: 20, right: 20, bottom: 35, left: 20},
         chartWidth = width - margin.left - margin.right,
         chartHeight = height - margin.top - margin.bottom;
 
@@ -481,19 +478,30 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("class", "xaxis")
       .attr("transform", "translate(0," + chartHeight + ")")
       .call(d3.axisBottom(x)
-        .tickSizeInner([-chartHeight])
+        .tickSizeInner([10])
         .ticks(1)
         .tickValues([adjustedTarget])
         .tickFormat(d => d3.format("$,.2f")(d) + " on " + serviceName + " subscription" + (includeFees ? " (including fees)" : "")));
   
-  //Price bar
+  //Hatched background
+  g.selectAll(".bar")
+      .data(profitData)
+    .enter()
+      .append("rect")
+      .attr("fill",   () => "url(#background-stripe)")
+      .attr("x",      () => x(0))
+      .attr("y",      d => y(0))
+      .attr("height", chartHeight)
+      .attr("width",  d => x(adjustedTarget));
+
+  //Price bars
   g.selectAll(".bar")
       .data(filteredData)
     .enter()
       .append("rect")
       .attr("fill", d => "url(#" + d.service + "-stripe)")
       .attr("class", "bar")
-      .attr("class", d => d.isPremium ? "" : d.service)
+      .attr("class",   d => d.isPremium ? "" : d.service)
       .attr("x",       d => x(d.profitGraphPos))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
@@ -509,8 +517,8 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   g.selectAll(".text")
     .data(profitData)
     .enter()
-    .append("text")
-    .attr("fill",  "#93a1a1")
+      .append("text")
+      .attr("fill",  "#93a1a1")
       .attr("x", d => x(d.value) + 10)
       .attr("y", d => y(d.service) + (y.bandwidth() / 3))
       .attr("font-size", 12)
@@ -519,8 +527,8 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   g.selectAll(".text")
     .data(profitData)
     .enter()
-    .append("text")
-    .attr("fill",  "#93a1a1")
+      .append("text")
+      .attr("fill",  "#93a1a1")
       .attr("x", d => x(d.value) + 10)
       .attr("y", d => y(d.service) + (y.bandwidth() * 2.5 / 3))
       .attr("font-size", 10)

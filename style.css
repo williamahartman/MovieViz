@@ -10,6 +10,10 @@
 
 
 /* General page style stuff */
+body {
+  margin-bottom: 150px;
+}
+
 .section {
   margin-top: 50px; 
   margin-bottom: 75px;
@@ -89,6 +93,10 @@ div.tooltip {
   stroke: var(--none-color);
 }
 
+.background-hatch {
+  stroke: #004052;
+}
+
 /* SVG filter for darkening elements */
 .darker {
   filter: url(#darker);
@@ -97,12 +105,12 @@ div.tooltip {
 /* Graph styles */
 .xaxis line{
   stroke-width: 0.5px;
-  stroke: #586e75;
+  stroke: #004052;
 }
 
 .xaxis path{
   stroke-width: 0.5px;
-  stroke: #586e75;
+  stroke: #004052;
 }
 
 .xaxis text{
@@ -111,12 +119,12 @@ div.tooltip {
 
 .yaxis line{
   stroke-width: 0.5px;
-  stroke: #586e75;
+  stroke: #004052;
 }
 
 .yaxis path{
   stroke-width: 0.5px;
-  stroke: #586e75;
+  stroke: #004052;
 }
 
 .yaxis text{
@@ -125,7 +133,7 @@ div.tooltip {
 
 .tick line {
   stroke-width: 0.5px;
-  stroke: #586e75;
+  stroke: #004052;
 }
 
 .double-feature-text {

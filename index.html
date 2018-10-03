@@ -29,7 +29,7 @@
   </div>
   <div class="section">
     <h2>Movies by Day</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
@@ -48,7 +48,7 @@
   </div>
   <div class="section">
     <h2>Distance Between Release Date and View Date</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
@@ -69,7 +69,7 @@
   </div>
   <div class="section">
     <h2>Theater Visits by Service</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
@@ -88,7 +88,7 @@
   </div>
   <div class="section">
     <h2>Movies by Rating</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin-bottom:15px;">
+    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
       <tr>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
         <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
@@ -102,8 +102,7 @@
     </table>
     <svg id="ratings-graph"></svg>
     <p class="chart-caption">
-      Ratings from <a href=https://letterboxd.com/Nocut12/films> my Letterboxd account.</a> Only the first viewing of each movie is shown.
-      <br>
+      Ratings from <a href=https://letterboxd.com/Nocut12/films> Letterboxd.</a> Only the first viewing of each movie is shown.
       Premium showings have hatched bars.
     </p>
   </div>
@@ -111,27 +110,40 @@
     <h2>Sinemia Profitability</h1>
     <svg id="sinemia-profit-graph"></svg>
     <p class="chart-caption">
-      Covers the first year. Booking fees are included. Chronological order. Premium showings have hatched bars.
+      Profitable after the bar clears the hatched background. Movies are in chronological order.
     </p>
   </div>
-  <div class="section-small">
+  <div class="section">
     <h2>MoviePass Profitability</h1>
     <svg id="moviepass-profit-graph"></svg>
     <p class="chart-caption">
-      Covers each month of the first year. Chronological order.
+      Profitable after the bar clears the hatched background. Movies are in chronological order.
     </p>
   </div>
+
+  <!-- Pre-defined patterned fills. The rest are generated off the list of services -->
   <svg width="0" height="0">
-      <defs>
-        <filter id="darker">
-          <feColorMatrix type='matrix' values='0.5 0.0 0.0 0.0 0.0
-                                               0.0 0.5 0.0 0.0 0.0
-                                               0.0 0.0 0.5 0.0 0.0
-                                               0.0 0.0 0.0 1.0 0.0'/>
-        </filter>
-      </defs>
-      <rect x="0" y="0" width="10" height="10"/>
-    </svg>
-    <script src="charts.js"></script>
+    <defs>
+      <filter id="darker">
+        <feColorMatrix type='matrix' values='0.5 0.0 0.0 0.0 0.0
+                                              0.0 0.5 0.0 0.0 0.0
+                                              0.0 0.0 0.5 0.0 0.0
+                                              0.0 0.0 0.0 1.0 0.0'/>
+      </filter>
+    </defs>
+    <rect x="0" y="0" width="10" height="10"/>
+  </svg>
+  <svg width="5" height="5">
+    <defs>
+      <pattern id="background-stripe" patternUnits="userSpaceOnUse" width="5" height="5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="5" height="5">
+          <rect width="5" height="5" fill-opacity="0"></rect>
+          <path d="M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z" class="background-hatch" stroke-width="1"></path>
+        </svg>
+      </pattern>
+    </defs>
+  </svg>
+
+  <script src="charts.js"></script>
   <a href="https://github.com/williamahartman/MovieViz"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 </body>
