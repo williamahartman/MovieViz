@@ -10,18 +10,17 @@
   <div class="section-small">
     <h1>Movie Theater Data</h1>
     <p style="font-size:0.85em">
-        I started using MoviePass a little while ago, so I've been going to the theater a lot. With the service falling apart, 
-        I thought it would be fun to take a look at the data on the movies I saw.
+        I started going to the movies a lot when I signed up for Moviepass in late 2017. Now, with the service falling apart, 
+        I thought it would be fun to take a look at the data on what I saw.
         <br><br>
-        The charts were made with <a href="https://d3js.org/">D3</a>. All the data is pulled directly from a 
+        The charts were made with <a href="https://d3js.org/">D3.</a> All the data is pulled out of a 
         <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a> 
-        with <a href="https://github.com/jsoma/tabletop">Tabletop.js</a> on page load. Some of the data comes from 
-        <a href="http://www.omdbapi.com/">OMDb.</a> Ratings from <a href=https://letterboxd.com/Nocut12/films> my Letterboxd account.</a> 
+        on page load with <a href="https://github.com/jsoma/tabletop">Tabletop.js.</a> Some of the data in the spreadsheet comes from 
+        <a href="http://www.omdbapi.com/">OMDb.</a> The ratings are pulled from <a href=https://letterboxd.com/Nocut12/films> my Letterboxd account.</a> 
         I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> <a href="https://beta.observablehq.com/@mbostock/d3-calendar-view">projects</a>
-        for the calendar chart and 
-        <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the stacked bar chart. 
-        I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color scheme. The hatched 
-        fill was adapted from <a href="https://github.com/iros/patternfills"> this project.</a>
+        for the calendar chart and <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the 
+        stacked bar chart. I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color 
+        scheme. The hatched fill was adapted from <a href="https://github.com/iros/patternfills"> this project.</a>
     </p>
   </div>
   <div id="text-stats" class="section-small">
@@ -62,7 +61,7 @@
     </table>
     <svg id="date-diff-graph"></svg>
     <p class="chart-caption">
-      X-axis is days between view data and the date of widest release. Only first run movies are shown.
+      The x-axis shows the number of days between the view date and the date of widest release. Only first run movies are shown. 
       <br>
       Premium showings have hatched bars. Bars are layered for movies that were viewed more than once.
     </p>
@@ -83,7 +82,7 @@
     </table>
     <svg id="theater-graph"></svg>
     <p class="chart-caption">
-      X-axis is number of visits. Premium showings have hatched bars.
+      The x-axis shows the number of visits. Premium showings have hatched bars.
     </p>
   </div>
   <div class="section">
@@ -102,7 +101,7 @@
     </table>
     <svg id="ratings-graph"></svg>
     <p class="chart-caption">
-      Ratings from <a href=https://letterboxd.com/Nocut12/films> Letterboxd.</a> Only the first viewing of each movie is shown.
+      Ratings are from <a href=https://letterboxd.com/Nocut12/films> Letterboxd.</a> Only the first viewing of each movie is shown.
       Premium showings have hatched bars.
     </p>
   </div>
@@ -110,14 +109,14 @@
     <h2>Sinemia Profitability</h1>
     <svg id="sinemia-profit-graph"></svg>
     <p class="chart-caption">
-      Profitable after the bar clears the hatched background. Movies are in chronological order.
+      Sinemia becomes profitable after the bar clears the hatched background. Movies are in chronological order.
     </p>
   </div>
   <div class="section">
     <h2>MoviePass Profitability</h1>
     <svg id="moviepass-profit-graph"></svg>
     <p class="chart-caption">
-      Profitable after the bar clears the hatched background. Movies are in chronological order.
+      Moviepass becomes profitable after the bar clears the hatched background. Movies are in chronological order.
     </p>
   </div>
 
