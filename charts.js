@@ -112,7 +112,7 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
   data.sort((a, b) => a.date - b.date);
   data.forEach((d) => {
     const inData = filteredData.some(d2 => d2.movie === d.movie);
-    if(!inData) {
+    if(!inData && d.rating != 0) {
       filteredData.push(d);
     }
   });
@@ -455,7 +455,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   var receivedAmount = 0;
   filteredData.forEach(d => {
     d.profitGraphPos = receivedAmount;
-    receivedAmount += d.price + (includeFees ? d.fees : 0);
+    receivedAmount += d.price;
   });
   const profitData = [{service: service, value: receivedAmount}];
   const adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
@@ -505,7 +505,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("x",       d => x(d.profitGraphPos))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
-      .attr("width",   d => x(d.price + (includeFees ? d.fees : 0)) - 0.5)
+      .attr("width",   d => x(d.price) - 0.5)
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
