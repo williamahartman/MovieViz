@@ -36,10 +36,10 @@ function drawGraphs(data, tabletop) {
 
   //Draw Charts
   drawTextStats(data, firstYear, "#text-stats");
-  drawRatingsGraph(data, "#ratings-graph", 885, 200, tooltipDiv);
+  drawRatingsGraph(data, "#ratings-graph", 885, tooltipDiv);
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
-  drawDateDiffBarGraph(data, "#date-diff-graph", 885, 600, tooltipDiv);
-  drawTheaterGraph(data, "#theater-graph", 885, 250, tooltipDiv);
+  drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
+  drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
   drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 130, tooltipDiv);
   drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 130, tooltipDiv);
 }
@@ -98,12 +98,7 @@ function drawTextStats(data, startYear, id) {
 }
 
 //Draw a graph of ratings
-function drawRatingsGraph(data, id, width, height, tooltip) {
-  const svg = d3.select(id),
-      margin = {top: 20, right: 225, bottom: 30, left: 225},
-      chartWidth = width - margin.left - margin.right,
-      chartHeight = height - margin.top - margin.bottom;
-
+function drawRatingsGraph(data, id, width, tooltip) {
   //Data processing
   const serviceList = getServiceList(data);
   serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
@@ -132,15 +127,21 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
   })
   const maxRatings = d3.max(ratingsTally);
 
+  //Svg junk
+  const svg = d3.select(id),
+      calculatedHeight = maxRatings * 9,
+      margin = {top: 20, right: 225, bottom: 30, left: 225},
+      chartWidth = width - margin.left - margin.right,
+      height = calculatedHeight + margin.top + margin.bottom;
+
   //Scales
   const x = d3.scaleBand().range([chartWidth, 0]);
-  const y = d3.scaleLinear().range([0, chartHeight]);
+  const y = d3.scaleLinear().range([0, calculatedHeight]);
   x.domain(ratingsList.reverse()).padding(0.025);
   y.domain([0, maxRatings]);
 
   //SVG Setup
   const g = svg.attr("width",  "100%")
-               .attr("height", "auto")
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -148,7 +149,7 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
   //X-axis
   g.append("g")
    .attr("class", "xaxis")
-   .attr("transform", "translate(0," + chartHeight + ")")
+   .attr("transform", "translate(0," + calculatedHeight + ")")
    .call(d3.axisBottom(x)
            .tickFormat(d => numToStars(d)));
 
@@ -160,7 +161,7 @@ function drawRatingsGraph(data, id, width, height, tooltip) {
      .attr("fill", d => "url(#" + d.service + "-stripe)")
      .attr("class", "bar")
      .attr("class", d => d.isPremium ? "" : d.service)
-     .attr("y", d => chartHeight - y(d.ratingsGraphPos + 1))
+     .attr("y", d => calculatedHeight - y(d.ratingsGraphPos + 1))
      .attr("x", d => x(d.rating))
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
@@ -186,7 +187,6 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
               .enter()
                 .append("svg")
                 .attr("width",  "100%")
-                .attr("height", "auto")
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
@@ -289,31 +289,32 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 }
 
 //Draw a chart of movie date distances
-function drawDateDiffBarGraph(data, id, width, height, tooltip) {
-  const svg = d3.select(id),
-      margin = {top: 20, right: 20, bottom: 30, left: 150},
-      chartWidth = width - margin.left - margin.right,
-      chartHeight = height - margin.top - margin.bottom;
-
+function drawDateDiffBarGraph(data, id, width, tooltip) {
   //Sort and filter data, find min/max
   data.sort((a, b) => b.dateDiff - a.dateDiff);
   const filteredData = data.filter(d => d.firstRun)
-                         .map(d => {
-                           d.movieGraph = d.movie.length > 25 ? d.movie.substring(0,25)+"..." : d.movie;
-                           return d;
-                         });
+                           .map(d => {
+                             d.movieGraph = d.movie.length > 25 ? d.movie.substring(0, 25)+"..." : d.movie;
+                             return d;
+                           });
   const minDiff = d3.min(filteredData, d => d.dateDiff);
   const maxDiff = d3.max(filteredData, d => d.dateDiff);
+
+  //SVG junk
+  const svg = d3.select(id),
+  calculatedHeight = filteredData.length * 8.5,
+  margin = {top: 20, right: 20, bottom: 30, left: 150},
+  chartWidth = width - margin.left - margin.right,
+  height = calculatedHeight + margin.top + margin.bottom;
     
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
-  const y = d3.scaleBand().range([chartHeight, 0]);
+  const y = d3.scaleBand().range([calculatedHeight, 0]);
   x.domain([minDiff, maxDiff + 5]);
   y.domain(filteredData.map(d => d.movieGraph)).padding(0.1);
 
   //SVG setup
   const g = svg.attr("width",  "100%")
-               .attr("height", "auto")
                .attr("viewBox", "0 0 " + width + " " + height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -328,9 +329,9 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
   }
   g.append("g")
       .attr("class", "xaxis")
-      .attr("transform", "translate(0," + chartHeight + ")")
+      .attr("transform", "translate(0," + calculatedHeight + ")")
       .call(d3.axisBottom(x)
-              .tickSizeInner([-chartHeight])
+              .tickSizeInner([-calculatedHeight])
               .tickValues(ticks));
 
   //Y-axis
@@ -370,17 +371,12 @@ function drawDateDiffBarGraph(data, id, width, height, tooltip) {
 }
 
 //Draw a graph of theater counts
-function drawTheaterGraph(data, id, width, height, tooltip) {
-  const svg = d3.select(id),
-      margin = {top: 20, right: 20, bottom: 30, left: 180},
-      chartWidth = width - margin.left - margin.right,
-      chartHeight = height - margin.top - margin.bottom;
-
+function drawTheaterGraph(data, id, width, tooltip) {
   //Data processing
   const serviceList = getServiceList(data);
   serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
-  const theaterList = getTheaterList(data);
-  theaterList.sort((a, b) => data.filter(d => b === d.theater).length - data.filter(d => a === d.theater).length);
+  const theaterList = getTheaterList(data)
+                        .sort((a, b) => data.filter(d => b === d.theater).length - data.filter(d => a === d.theater).length);
   data.sort((a, b) => {
     const aToNum = (1000000000 * serviceList.findIndex(d => d === a.service)) + (moment(a.date).unix()); 
     const bToNum = (1000000000 * serviceList.findIndex(d => d === b.service)) + (moment(b.date).unix());
@@ -395,15 +391,21 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
   })
   const maxVisits = d3.max(theaterTally);
 
+  //Svg junk
+  const svg = d3.select(id),
+      calculatedHeight = theaterList.length * 10,
+      margin = {top: 20, right: 20, bottom: 30, left: 185},
+      chartWidth = width - margin.left - margin.right,
+      height = calculatedHeight + margin.top + margin.bottom
+
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
-  const y = d3.scaleBand().range([chartHeight, 0]);
+  const y = d3.scaleBand().range([calculatedHeight, 0]);
   x.domain([0, maxVisits + 1]);
   y.domain(theaterList).padding(0.1);
 
   //SVG Setup
   const g = svg.attr("width",  "100%")
-               .attr("height", "auto")
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -411,10 +413,10 @@ function drawTheaterGraph(data, id, width, height, tooltip) {
   //X-axis
   g.append("g")
    .attr("class", "xaxis")
-   .attr("transform", "translate(0," + chartHeight + ")")
+   .attr("transform", "translate(0," + calculatedHeight + ")")
    .call(d3.axisBottom(x)
            .ticks(maxVisits)
-           .tickSizeInner([-chartHeight]));
+           .tickSizeInner([-calculatedHeight]));
 
   //Y-axis
   g.append("g")
@@ -468,7 +470,6 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
 
   //SVG setup
   const g = svg.attr("width",  "100%")
-               .attr("height", "auto")
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -547,7 +548,7 @@ function genPatternedFills(data) {
                    "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
                      "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
                        "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
-                       "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"1\"/>" +
+                       "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"2\"/>" +
                      "</svg>" +
                    "</pattern>" +
                  "</defs>";
