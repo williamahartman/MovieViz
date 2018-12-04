@@ -2,22 +2,26 @@
 const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
 Tabletop.init({ key: public_spreadsheet_url,
                 callback: drawGraphs,
-                simpleSheet: true });
+                wanted: ["Movies", "Memberships"]});
             
-function drawGraphs(data, tabletop) {
+function drawGraphs(spreadsheetContents, tabletop) {
   // Define the div for the tooltip
   const tooltipDiv = d3.select("body")
                      .append("div")
                      .attr("class",    "tooltip")
                      .style("opacity", 0);
 
+  //get the data we need
+  var data = spreadsheetContents["Movies"].elements;
+  var membershipData = spreadsheetContents["Memberships"].elements;
+
   //Clean up data
   data = data.map(d => { 
-    d.date = moment(d.date, "MM/D/YYYY");
-    d.releaseDate = moment(d.releaseDate, "DD MMM YYYY")
-    d.dateDiff = moment(d.date, "MM/D/YYYY").diff(d.releaseDate, "days");
+    d.viewDate = moment(d.viewDate, "MM/DD/YYYY");
+    d.releaseDate = moment(d.releaseDate, "MM/DD/YYYY")
+    d.dateDiff = moment(d.viewDate, "MM/DD/YYYY").diff(d.releaseDate, "days");
     d.firstRun = d.firstRun === "Yes";
-    d.isPremium = d.premium !== "No";
+    d.isPremium = d.format !== "DCP" && d.format !== "35mm";
     d.serviceName = d.service;
     d.service = "service-" + d.service.toLowerCase().replace(" ", "-")
     d.price = +d.price;
@@ -26,13 +30,18 @@ function drawGraphs(data, tabletop) {
     return d;
   });
   console.log(data);
+  console.log(membershipData);
 
   //Generate the hatched patterned fills for each service
   genPatternedFills(data);
 
   //Figure out year range
-  const firstYear = d3.min(data, d => moment(d.date).year());
-  const lastYear =  d3.max(data, d => moment(d.date).year());
+  const firstYear = d3.min(data, d => moment(d.viewDate).year());
+  const lastYear =  d3.max(data, d => moment(d.viewDate).year());
+
+  //Figure out per-service costs
+  const moviePassCost = +membershipData.find(m => m.service === "Moviepass").totalSpent;
+  const sinemiaCost = +membershipData.find(m => m.service === "Sinemia").totalSpent;
 
   //Draw Charts
   drawTextStats(data, firstYear, "#text-stats");
@@ -40,8 +49,8 @@ function drawGraphs(data, tabletop) {
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
-  drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", 99.50, false, 885, 130, tooltipDiv);
-  drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", 179.88, true, 885, 130, tooltipDiv);
+  drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", moviePassCost, false, 885, 130, tooltipDiv);
+  drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", sinemiaCost, true, 885, 130, tooltipDiv);
 }
 
 function drawTextStats(data, startYear, id) {
@@ -104,7 +113,7 @@ function drawRatingsGraph(data, id, width, tooltip) {
   serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
   const ratingsList = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
   const filteredData = [];
-  data.sort((a, b) => a.date - b.date);
+  data.sort((a, b) => a.viewDate - b.viewDate);
   data.forEach((d) => {
     const inData = filteredData.some(d2 => d2.movie === d.movie);
     if(!inData && d.rating != 0) {
@@ -207,8 +216,8 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   // Update days with viewing data
   data.forEach(datum => {
-    let sameDayMovies = data.filter(d => moment(d.date).isSame(datum.date));
-    rect.filter(d => moment(datum.date).isSame(d, "day"))
+    let sameDayMovies = data.filter(d => moment(d.viewDate).isSame(datum.viewDate));
+    rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => "url(#" + datum.service + "-stripe)")
         .on("mouseout",  () => hideTooltip(tooltip))
@@ -282,7 +291,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
        .attr("fill",        "#eee8d5")
        .classed("double-feature-text", true)
        .text(d => {
-         let numMovies = data.filter(datum => moment(datum.date).isSame(d, "day")).length;
+         let numMovies = data.filter(datum => moment(datum.viewDate).isSame(d, "day")).length;
          return numMovies > 1 ? numMovies : "";
        });
 
@@ -378,8 +387,8 @@ function drawTheaterGraph(data, id, width, tooltip) {
   const theaterList = getTheaterList(data)
                         .sort((a, b) => data.filter(d => b === d.theater).length - data.filter(d => a === d.theater).length);
   data.sort((a, b) => {
-    const aToNum = (1000000000 * serviceList.findIndex(d => d === a.service)) + (moment(a.date).unix()); 
-    const bToNum = (1000000000 * serviceList.findIndex(d => d === b.service)) + (moment(b.date).unix());
+    const aToNum = (1000000000 * serviceList.findIndex(d => d === a.service)) + (moment(a.viewDate).unix()); 
+    const bToNum = (1000000000 * serviceList.findIndex(d => d === b.service)) + (moment(b.viewDate).unix());
     return aToNum - bToNum;
   });
   const theaterTally = []
@@ -452,7 +461,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
 
   //Data Processing
   const filteredData = data.filter(d => d.service === service);
-  filteredData.sort((a, b) => moment(a.date).unix() - moment(b.date).unix())
+  filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix())
 
   var receivedAmount = 0;
   filteredData.forEach(d => {
@@ -460,12 +469,11 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
     receivedAmount += d.price;
   });
   const profitData = [{service: service, value: receivedAmount}];
-  const adjustedTarget = includeFees ? targetAmount + filteredData.reduce((acc, val) => Number(val.fees) + acc, 0) : targetAmount;
 
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
   const y = d3.scaleBand().range([chartHeight, 0]);
-  x.domain([0, receivedAmount > adjustedTarget ? receivedAmount * 1.333 : adjustedTarget * 1.333]);
+  x.domain([0, receivedAmount > targetAmount ? receivedAmount * 1.333 : targetAmount * 1.333]);
   y.domain([service]).padding(0.25);
 
   //SVG setup
@@ -481,7 +489,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .call(d3.axisBottom(x)
         .tickSizeInner([10])
         .ticks(1)
-        .tickValues([adjustedTarget])
+        .tickValues([targetAmount])
         .tickFormat(d => d3.format("$,.2f")(d) + " on " + serviceName + " subscription" + (includeFees ? " (including fees)" : "")));
   
   //Hatched background
@@ -493,7 +501,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("x",      () => x(0))
       .attr("y",      d => y(0))
       .attr("height", chartHeight)
-      .attr("width",  d => x(adjustedTarget));
+      .attr("width",  d => x(targetAmount));
 
   //Price bars
   g.selectAll(".bar")
@@ -533,7 +541,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("x", d => x(d.value) + 10)
       .attr("y", d => y(d.service) + (y.bandwidth() * 2.5 / 3))
       .attr("font-size", 10)
-      .text(d => "(" + d3.format("$,.2f")(adjustedTarget / filteredData.length) + " per ticket)");
+      .text(d => "(" + d3.format("$,.2f")(targetAmount / filteredData.length) + " per ticket)");
 }
 
 
@@ -610,12 +618,13 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
           "</div>" +
           "<div>" +
             "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + moment(d.releaseDate).format("M/D/YYYY") + "<br>" +
-            "<span style=\"font-weight: 900;\">DATE WATCHED: </span>" + moment(d.date).format("M/D/YYYY") + dateDiffMessage + "<br>" +
+            "<span style=\"font-weight: 900;\">DATE WATCHED: </span>" + moment(d.viewDate).format("M/D/YYYY") + dateDiffMessage + "<br>" +
             "<span style=\"font-weight: 900;\">THEATER: </span>" + d.theater + "<br/>" +
             (d.theaterNumber === "" ? "<br/>" : "<span style=\"font-weight: 900;\">THEATER NUMBER: </span>" + d.theaterNumber + "<br><br>") +
             "<span style=\"font-weight: 900;\">PRICE: </span>" + d3.format("$,.2f")(d.price) + "<br>" +
+            (d.fees === 0 ? "" : "<span style=\"font-weight: 900;\">FEES: </span>" + d3.format("$,.2f")(d.fees) + "<br>") +
             "<span style=\"font-weight: 900;\">SERVICE?: </span>" + d.serviceName + "<br>" +
-            "<span style=\"font-weight: 900;\">PREMIUM SCREENING?: </span>" + d.premium + "<br><br>" +
+            "<span style=\"font-weight: 900;\">FORMAT: </span>" + d.format + "<br><br>" +
             (d.notes === "" ? "" : "<span style=\"font-weight: 900;\">NOTES: </span>" + d.notes) +
           "</div>" +
         "</div>" +

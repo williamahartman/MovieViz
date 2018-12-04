@@ -21,6 +21,18 @@
         for the calendar chart and <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the 
         stacked bar chart. I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color 
         scheme. The hatched fill was adapted from <a href="https://github.com/iros/patternfills"> this project.</a>
+        <br><br>
+        <ul style="font-size:0.85em">
+          <li>"Non-premium" showings are considered to be in 2D DCP or 35mm. Premium showings include just about anything else (3D, chain-specific large format brands, 
+            Atmos, all varieties of IMAX, 70mm, etc.)</li>
+          <li>This chart doesn't include things at movie theaters that aren't movies. If it doesn't have an IMDb page, it isn't included.</li>
+          <li>Prices paid don't factor in concessions, movie tickets I bought for other people, or donations to non-profit theaters.</li>
+          <li>If there are mutliple kinds of feed (online booking fees, convenience fees, Sinemia fees) on a single ticket, they are all added together.</li>
+          <li>"Gifts" can be an invite to a free screening, it doesn't have to be someone else paying for the tickets. "Free Tickets" are tickets that were offered as 
+            some kind of promotion or make-good.</li>
+          <li>For double features, the top billed movie is listed at full price. The second billed movie is listed with a price of $0 and the "Free Tickets" service.</li>
+        </ul>
+        
     </p>
   </div>
   <div id="text-stats" class="section-small">
@@ -43,7 +55,7 @@
     <svg id="ratings-graph"></svg>
     <p class="chart-caption">
       Ratings are from <a href=https://letterboxd.com/Nocut12/films> Letterboxd.</a> Only the first viewing of each movie is shown.
-      Premium showings have hatched bars.
+      Premium showings (3D, IMAX, 70mm, large format) have hatched bars.
     </p>
   </div>
   <div class="section">
@@ -62,7 +74,7 @@
     </table>
     <div id="calendar-graph"></div>
     <p class="chart-caption">
-      Premium showings (3D, IMAX, 70mm, large format) have hatched icons. Multiple movies were viewed on numbered days.
+      Premium showings have hatched icons. Multiple movies were viewed on numbered days.
     </p>
   </div>
   <div class="section">
@@ -109,14 +121,14 @@
     <h2>Sinemia Profitability</h1>
     <svg id="sinemia-profit-graph"></svg>
     <p class="chart-caption">
-      Sinemia becomes profitable after the bar clears the hatched background. Movies are in chronological order.
+      My Sinemia subscription becomes profitable after the bar clears the hatched background. Movies are in chronological order.
     </p>
   </div>
   <div class="section">
     <h2>MoviePass Profitability</h1>
     <svg id="moviepass-profit-graph"></svg>
     <p class="chart-caption">
-      Moviepass becomes profitable after the bar clears the hatched background. Movies are in chronological order.
+      My Moviepass subscription becomes profitable after the bar clears the hatched background. Movies are in chronological order.
     </p>
   </div>
 
