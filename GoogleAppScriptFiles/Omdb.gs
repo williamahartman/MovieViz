@@ -1,7 +1,10 @@
 function updateData() {
+  //Sleep for a little while so there's time for the cell to get copied from the
+  //"Form Responses" sheet to the "Movies" sheet.
+  Utilities.sleep(1000);
+  
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheets()[0];
-  Logger.log(sheet.getName())
   
   var range = sheet.getRange("$A$2:$P1000");
   var rangeVals = range.getValues();
