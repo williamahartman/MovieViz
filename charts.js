@@ -61,14 +61,16 @@ function drawTextStats(data, membershipData, startYear, id) {
   membershipData.forEach(m => {
     const numFromService = data.filter(d => d.service === m.service).length;
     statsTable += 
-      "<table style=\"border-collapse:collapse;text-align:left;width:33%\">" +
-        "<tbody>" +
-          "<tr>" +
-            "<td class=\"" + m.service + "\" style=\"font-size:25px;text-align:right;50px;\">" + numFromService + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
-          "</tr>" +
-        "</tbody>" +
-      "</table>";
+      "<div style=\"width:31%\">" +
+        "<table style=\"border-collapse:collapse;text-align:left;\">" +
+          "<tbody>" +
+            "<tr>" +
+              "<td class=\"" + m.service + "\" style=\"font-size:25px;text-align:right;50px;\">" + numFromService + "</td>" +
+              "<td style=\"padding-left:15px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
+            "</tr>" +
+          "</tbody>" +
+        "</table>" +
+      "</div>";
   })
   statsTable += "</div>"
 
