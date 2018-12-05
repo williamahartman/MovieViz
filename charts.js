@@ -47,7 +47,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
   const sinemiaCost = +membershipData.find(m => m.service === "service-sinemia").totalSpent;
 
   //Draw Charts
-  drawTextStats(data, firstYear, "#text-stats");
+  drawTextStats(data, membershipData, firstYear, "#text-stats");
   drawRatingsGraph(data, "#ratings-graph", 885, tooltipDiv);
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
@@ -56,15 +56,23 @@ function drawGraphs(spreadsheetContents, tabletop) {
   drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", sinemiaCost, true, 885, 130, tooltipDiv);
 }
 
-function drawTextStats(data, startYear, id) {
-  const numMovies = data.length;
-  const numNoService = data.filter(d => d.service === "service-none").length;
-  const numMoviepass = data.filter(d => d.service === "service-moviepass").length;
-  const numSinemia = data.filter(d => d.service === "service-sinemia").length;
-  const numFree = data.filter(d => d.service === "service-free-tickets").length;
-  const numGift = data.filter(d => d.service === "service-gift").length;
-  const numSneak = data.filter(d => d.service === "service-snuck-in").length;
+function drawTextStats(data, membershipData, startYear, id) {
+  var statsTable =  "<div style=\"display:flex; flex-wrap:wrap;\">";
+  membershipData.forEach(m => {
+    const numFromService = data.filter(d => d.service === m.service).length;
+    statsTable += 
+      "<table style=\"border-collapse:collapse;text-align:left;width:33%\">" +
+        "<tbody>" +
+          "<tr>" +
+            "<td class=\"" + m.service + "\" style=\"font-size:25px;text-align:right;50px;\">" + numFromService + "</td>" +
+            "<td style=\"padding-left:15px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
+          "</tr>" +
+        "</tbody>" +
+      "</table>";
+  })
+  statsTable += "</div>"
 
+  const numMovies = data.length;
   d3.select(id)
     .append("p")
     .html(
@@ -74,38 +82,7 @@ function drawTextStats(data, startYear, id) {
           "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
       "</table>" +
-      "<div style=\"display:flex; flex-wrap:wrap;\">" + 
-        "<table style=\"border-collapse:collapse;text-align:left\">" + 
-          "<tr>" + 
-            "<td class=\"service-none\" style=\"font-size:25px;text-align:right;50px;\">" + numNoService + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numNoService == 1 ? "ticket" : "tickets") + " paid for normally</td>" +
-          "</tr>" + 
-          "<tr>" + 
-            "<td class=\"service-snuck-in\" style=\"font-size:25px;text-align:right;width:50px;\">" + numSneak + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numSneak == 1 ? "movie" : "movies") + " snuck into <span style=\"font-size:0.55em\">(I'm a little stinker...)</span></td>" +
-          "</tr>" + 
-        "</table>" +
-        "<table style=\"border-collapse:collapse;text-align:left\">" + 
-          "<tr>" + 
-            "<td class=\"service-moviepass\" style=\"font-size:25px;text-align:right;width:50px;\">" + numMoviepass + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numMoviepass == 1 ? "ticket" : "tickets") + " from MoviePass</td>" +
-          "</tr>" + 
-          "<tr>" + 
-            "<td class=\"service-gift\" style=\"font-size:25px;text-align:right;width:50px;\">" + numGift + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numGift == 1 ? "ticket" : "tickets") + " received as gifts</td>" +
-          "</tr>" + 
-        "</table>" +
-        "<table style=\"border-collapse:collapse;text-align:left\">" +
-          "<tr>" + 
-            "<td class=\"service-sinemia\" style=\"font-size:25px;text-align:right;width:50px;\">" + numSinemia + "</td>" +
-            "<td style=\"padding-left:15px;\">" + (numSinemia == 1 ? "ticket" : "tickets") + " from Sinemia</td>" +
-          "</tr>" + 
-          "<tr>" + 
-            "<td class=\"service-free-tickets\" style=\"font-size:25px;text-align:right;width:50px;\">" + numFree + "</td>" +
-            "<td style=\"padding-left:15px;\">free " + (numFree == 1 ? "ticket" : "tickets") + " (passes, promotions, etc.)</td>" +
-          "</tr>" + 
-        "</table>" +
-      "</div>"
+      statsTable
     );
 }
 
