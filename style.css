@@ -1,14 +1,3 @@
-/* Color definitions */
-:root {
-  --moviepass-color: #d33682;
-  --sinemia-color: #2aa198;
-  --free-tickets-color: #859900;
-  --gift-color: #b58900;
-  --snuck-in-color: #6c71c4;
-  --none-color: #586e75;
-}
-
-
 /* General page style stuff */
 body {
   margin-bottom: 150px;
@@ -41,56 +30,6 @@ div.tooltip {
   background: #00212B;
   pointer-events: none;
   box-shadow: 0 15px 30px 0 rgba(0,0,0,0.11), 0 5px 15px 0 rgba(0,0,0,0.08);
-}
-
-
-/* Per-service color stuff */
-.service-moviepass {
-  fill: var(--moviepass-color);
-  color: var(--moviepass-color);
-}
-.service-moviepass-hatch {
-  stroke: var(--moviepass-color);
-}
-
-.service-sinemia {
-  fill: var(--sinemia-color);
-  color: var(--sinemia-color);
-}
-.service-sinemia-hatch {
-  stroke: var(--sinemia-color);
-}
-
-.service-free-tickets {
-  fill: var(--free-tickets-color);
-  color: var(--free-tickets-color);
-}
-.service-free-tickets-hatch {
-  stroke: var(--free-tickets-color);
-}
-
-.service-gift {
-  fill: var(--gift-color);
-  color: var(--gift-color);
-}
-.service-gift-hatch {
-  stroke: var(--gift-color);
-}
-
-.service-snuck-in {
-  fill: var(--snuck-in-color);
-  color: var(--snuck-in-color);
-}
-.service-snuck-in-hatch {
-  stroke: var(--snuck-in-color);
-}
-
-.service-none {
-  fill: var(--none-color);
-  color: var(--none-color);
-}
-.service-none-hatch {
-  stroke: var(--none-color);
 }
 
 .background-hatch {

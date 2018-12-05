@@ -7,9 +7,9 @@ Tabletop.init({ key: public_spreadsheet_url,
 function drawGraphs(spreadsheetContents, tabletop) {
   // Define the div for the tooltip
   const tooltipDiv = d3.select("body")
-                     .append("div")
-                     .attr("class",    "tooltip")
-                     .style("opacity", 0);
+                       .append("div")
+                       .attr("class",    "tooltip")
+                       .style("opacity", 0);
 
   //get the data we need
   var data = spreadsheetContents["Movies"].elements;
@@ -29,19 +29,22 @@ function drawGraphs(spreadsheetContents, tabletop) {
     d.rating = +d.rating;
     return d;
   });
+  membershipData.forEach(s => {
+    s.service = "service-" + s.service.toLowerCase().replace(" ", "-")
+  });
   console.log(data);
   console.log(membershipData);
 
   //Generate the hatched patterned fills for each service
-  genPatternedFills(data);
+  genPatternedFillsAndStyles(membershipData);
 
   //Figure out year range
   const firstYear = d3.min(data, d => moment(d.viewDate).year());
   const lastYear =  d3.max(data, d => moment(d.viewDate).year());
 
   //Figure out per-service costs
-  const moviePassCost = +membershipData.find(m => m.service === "Moviepass").totalSpent;
-  const sinemiaCost = +membershipData.find(m => m.service === "Sinemia").totalSpent;
+  const moviePassCost = +membershipData.find(m => m.service === "service-moviepass").totalSpent;
+  const sinemiaCost = +membershipData.find(m => m.service === "service-sinemia").totalSpent;
 
   //Draw Charts
   drawTextStats(data, firstYear, "#text-stats");
@@ -550,22 +553,38 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
  //      TOOLTIP/UTILITY FUNCTIONS     //
 ////////////////////////////////////////
 
-function genPatternedFills(data) {
-  getServiceList(data).forEach(s => {
-    const fill = "<defs>" +
-                   "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
-                     "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
-                       "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
-                       "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"2\"/>" +
-                     "</svg>" +
-                   "</pattern>" +
-                 "</defs>";
-    d3.select("body")
-      .append("svg")
-      .attr("width",  5)
-      .attr("height", 5)
-      .html(fill);
+function genPatternedFillsAndStyles(membershipData) {
+  var sheet = window.document.styleSheets[1];
+  membershipData.forEach(s => {
+    var colorRule = "." + s.service + " {" +
+                      "fill: "  + s.color + ";" +
+                      "color: " + s.color + ";" +
+                    "}"
+    var hatchRule = "." + s.service + "-hatch {" +
+                      "stroke: "  + s.color + ";" +
+                    "}"
+
+    sheet.insertRule(colorRule, sheet.cssRules.length);
+    sheet.insertRule(hatchRule, sheet.cssRules.length);
   })
+
+  //Add patterned fills for each service
+  membershipData.map(s => s.service)
+                .forEach(s => {
+                  const fill = "<defs>" +
+                                "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
+                                  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
+                                    "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
+                                    "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"2\"/>" +
+                                  "</svg>" +
+                                "</pattern>" +
+                              "</defs>";
+                  d3.select("body")
+                    .append("svg")
+                    .attr("width",  5)
+                    .attr("height", 5)
+                    .html(fill);
+                });
 }
 
 function getServiceList(data) {
