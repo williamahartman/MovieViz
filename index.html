@@ -16,7 +16,7 @@
         The charts were made with <a href="https://d3js.org/">D3.</a> All the data is pulled out of a 
         <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a> 
         on page load with <a href="https://github.com/jsoma/tabletop">Tabletop.js.</a> Some of the data in the spreadsheet comes from 
-        <a href="http://www.omdbapi.com/">OMDb.</a> The ratings are pulled from <a href=https://letterboxd.com/Nocut12/films> my Letterboxd account.</a> 
+        <a href="http://www.omdbapi.com/">OMDb.</a> The ratings are pulled from <a href=https://letterboxd.com/Nocut12> my Letterboxd account.</a> 
         I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> <a href="https://bl.ocks.org/micahstubbs/89c6bd879d64aa511372064c6cf85711">projects</a>
         for the calendar chart and <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the 
         stacked bar chart. I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color 
@@ -30,8 +30,8 @@
           <li>If there are multiple kinds of fees (online booking fees, convenience fees, Sinemia fees) on a single ticket, they are all added together.</li>
           <li>"Gifts" can be an invite to a free screening, it doesn't have to be someone else paying for the tickets. "Free Tickets" are tickets that were 
             offered to me as some kind of promotion or make-good.</li>
-          <li>For double features, the top-billed movie is listed at full price. The second-billed movie is listed with a price of $0 under the "Double Feature" 
-            service.</li>
+          <li>For double features, the top-billed movie is listed at full price under whatever service was used to buy the ticket. The second-billed movie is listed
+            with a price of $0 under the "Double Feature" service.</li>
         </ul>
         
     </p>
@@ -41,38 +41,16 @@
   </div>
   <div class="section">
     <h2>Movies by Rating</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
-      </tr>
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
-      </tr>
-    </table>
+    <div id="legend"></div>
     <svg id="ratings-graph"></svg>
     <p class="chart-caption">
-      Ratings are from <a href=https://letterboxd.com/Nocut12/films> Letterboxd.</a> Only the first viewing of each movie is shown.
+      Ratings are from <a href=https://letterboxd.com/Nocut12> Letterboxd.</a> Only the first viewing of each movie is shown.
       Premium showings (3D, IMAX, 70mm, large format) have hatched bars.
     </p>
   </div>
   <div class="section">
     <h2>Movies by Day</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
-      </tr>
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
-      </tr>
-    </table>
+    <div id="legend"></div>
     <div id="calendar-graph"></div>
     <p class="chart-caption">
       Premium showings have hatched icons. Multiple movies were viewed on numbered days.
@@ -80,18 +58,7 @@
   </div>
   <div class="section">
     <h2>Distance Between Release Date and View Date</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
-      </tr>
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
-      </tr>
-    </table>
+    <div id="legend"></div>
     <svg id="date-diff-graph"></svg>
     <p class="chart-caption">
       The x-axis shows the number of days between the view date and the date of widest release. Only first run movies are shown. 
@@ -101,18 +68,7 @@
   </div>
   <div class="section">
     <h2>Theater Visits by Service</h1>
-    <table style="font-size:0.75em; border-collapse:collapse; text-align:left; margin:auto; margin-bottom:15px;">
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#586e75; font-size:1.75em">■</span> Bought tickets like normal</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#d33682; font-size:1.75em">■</span> Bought tickets with MoviePass</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#2aa198; font-size:1.75em">■</span> Bought tickets with Sinemia</td>
-      </tr>
-      <tr>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#6c71c4; font-size:1.75em">■</span> Snuck in 😈</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#b58900; font-size:1.75em">■</span> Gifts</td>
-        <td style="padding:0px 20px 0px 20px;"><span style="color:#859900; font-size:1.75em">■</span> Free tickets (passes, promotions, etc.)</td>
-      </tr>
-    </table>
+    <div id="legend"></div>
     <svg id="theater-graph"></svg>
     <p class="chart-caption">
       The x-axis shows the number of visits. Premium showings have hatched bars.

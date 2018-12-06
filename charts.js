@@ -46,6 +46,9 @@ function drawGraphs(spreadsheetContents, tabletop) {
   const moviePassCost = +membershipData.find(m => m.service === "service-moviepass").totalSpent;
   const sinemiaCost = +membershipData.find(m => m.service === "service-sinemia").totalSpent;
 
+  //Draw Legends
+  drawLegends(membershipData, "#legend")
+
   //Draw Charts
   drawTextStats(data, membershipData, firstYear, "#text-stats");
   drawRatingsGraph(data, "#ratings-graph", 885, tooltipDiv);
@@ -56,29 +59,30 @@ function drawGraphs(spreadsheetContents, tabletop) {
   drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", sinemiaCost, true, 885, 130, tooltipDiv);
 }
 
+//Draw a coarse summary of some basic statistics
 function drawTextStats(data, membershipData, startYear, id) {
-  var statsTable =  "<div style=\"display:flex; flex-wrap:wrap;\">";
+  var statsTable =  "<div style=\"display:flex;flex-wrap:wrap;\">";
   membershipData.forEach(m => {
     const numFromService = data.filter(d => d.service === m.service).length;
     statsTable += 
-      "<div style=\"width:31%\">" +
-        "<table style=\"border-collapse:collapse;text-align:left;\">" +
+      "<div style=\"width:33%\">" +
+        "<table>" +
           "<tbody>" +
             "<tr>" +
               "<td class=\"" + m.service + "\" style=\"font-size:25px;text-align:right;50px;\">" + numFromService + "</td>" +
-              "<td style=\"padding-left:15px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
+              "<td style=\"padding:10px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
             "</tr>" +
           "</tbody>" +
         "</table>" +
       "</div>";
-  })
-  statsTable += "</div>"
+  });
+  statsTable += "</div>";
 
   const numMovies = data.length;
   d3.select(id)
-    .append("p")
+    .append("div")
     .html(
-      "<table style=\"border-collapse:collapse;text-align:left;\">" + 
+      "<table>" + 
         "<tr>" + 
           "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px;width:50px;\">" + numMovies + "</td>" +
           "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
@@ -86,6 +90,29 @@ function drawTextStats(data, membershipData, startYear, id) {
       "</table>" +
       statsTable
     );
+}
+
+//Draw a legend for service colors
+function drawLegends(membershipData, id) {
+  var legend =  "<div style=\"display:flex;flex-wrap:wrap;width:70%;margin:auto;margin-bottom:15px;\">";
+  membershipData.filter(m => m.showInLegend === "TRUE")
+                .forEach(m => {
+                                legend += "<div style=\"width:33%;margin-bottom:-5px;\">" +
+                                            "<table>" +
+                                              "<tbody>" +
+                                                "<tr>" +
+                                                  "<td class=\"" + m.service + "\" style=\"text-align:right;font-size:1.5em\">■</td>" +
+                                                  "<td style=\"padding-left:5px;padding-right:5px;font-size:0.75em\">" + m.legendText + "</td>" +
+                                                "</tr>" +
+                                              "</tbody>" +
+                                            "</table>" +
+                                          "</div>";
+                              });
+  legend += "</div>";
+
+  d3.selectAll(id)
+    .append("div")
+    .html(legend);
 }
 
 //Draw a graph of ratings
