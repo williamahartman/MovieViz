@@ -68,6 +68,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
   drawTextStats(data, membershipData, firstYear, "#text-stats");
   drawRatingsGraph(data, "#ratings-graph", 885, tooltipDiv);
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
+  drawDayOfWeekGraph(data, "#day-of-week-graph", 885, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
   drawAllProfitGraphs(data, membershipData, "#profit-charts", tooltipDiv);
@@ -146,8 +147,8 @@ function drawRatingsGraph(data, id, width, tooltip) {
   });
 
   filteredData.sort((a, b) => {
-    const aToNum = (10 * serviceList.findIndex(d => d === a.service)) + (a.isPremium ? 1 : 0); 
-    const bToNum = (10 * serviceList.findIndex(d => d === b.service)) + (b.isPremium ? 1 : 0);
+    const aToNum = (10 * serviceList.findIndex(d => d === a.service)); 
+    const bToNum = (10 * serviceList.findIndex(d => d === b.service));
     return aToNum - bToNum;
   });
 
@@ -196,6 +197,74 @@ function drawRatingsGraph(data, id, width, tooltip) {
      .attr("class", d => d.isPremium ? "" : d.service)
      .attr("y", d => calculatedHeight - y(d.ratingsGraphPos + 1))
      .attr("x", d => x(d.rating))
+     .attr("width", x.bandwidth())
+     .attr("height", () => y(1) - 0.5)
+     .on("mouseout",  () => hideTooltip(tooltip))
+     .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
+     .on("mouseover", d => {
+       updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+       showTooltip(tooltip);
+     });
+}
+
+//Draw a graph of day-of-the-week frequencies
+function drawDayOfWeekGraph(data, id, width, tooltip) {
+  //Data processing
+  const serviceList = getServiceList(data);
+  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
+  const dayList = [0, 1, 2, 3, 4, 5, 6];
+
+  const filteredData = data.filter(d => d.viewDate.isValid());
+  filteredData.sort((a, b) => {
+    const aToNum = (10 * serviceList.findIndex(d => d === a.service)); 
+    const bToNum = (10 * serviceList.findIndex(d => d === b.service));
+    return aToNum - bToNum;
+  });
+
+  const dayTally = []
+  dayList.forEach(() => dayTally.push(0));
+  filteredData.forEach(d => {
+    d.dayGraphPos = dayTally[d.viewDate.day()];
+    dayTally[d.viewDate.day()]++;
+  })
+  const maxDayNum = d3.max(dayTally);
+
+  //Svg junk
+  const svg = d3.select(id),
+      calculatedHeight = maxDayNum * 9,
+      margin = {top: 20, right: 250, bottom: 30, left: 250},
+      chartWidth = width - margin.left - margin.right,
+      height = calculatedHeight + margin.top + margin.bottom;
+
+  //Scales
+  const x = d3.scaleBand().range([chartWidth, 0]);
+  const y = d3.scaleLinear().range([0, calculatedHeight]);
+  x.domain(dayList.reverse()).padding(0.25);
+  y.domain([0, maxDayNum]);
+
+  //SVG Setup
+  const g = svg.attr("width",  "100%")
+               .attr("viewBox", "0 0 " + width + " " + height)
+               .append("g")
+               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  //X-axis
+  g.append("g")
+   .attr("class", "xaxis")
+   .attr("transform", "translate(0," + calculatedHeight + ")")
+   .call(d3.axisBottom(x)
+           .tickFormat(d => ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"][d]));
+
+  //Stacked bars
+  g.selectAll(".bar")
+    .data(filteredData)
+   .enter()
+     .append("rect")
+     .attr("fill", d => "url(#" + d.service + "-stripe)")
+     .attr("class", "bar")
+     .attr("class", d => d.isPremium ? "" : d.service)
+     .attr("y", d => calculatedHeight - y(d.dayGraphPos + 1))
+     .attr("x", d => x(d.viewDate.day()))
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
      .on("mouseout",  () => hideTooltip(tooltip))
