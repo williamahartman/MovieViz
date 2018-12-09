@@ -29,8 +29,27 @@ function drawGraphs(spreadsheetContents, tabletop) {
     d.rating = +d.rating;
     return d;
   });
-  membershipData.forEach(s => {
-    s.service = "service-" + s.service.toLowerCase().replace(" ", "-")
+  membershipData = membershipData.map(s => {
+    s.serviceNameSimple = s.service;
+    s.service = "service-" + s.serviceNameSimple.toLowerCase().replace(" ", "-");
+    s.legendText = s.legendText;
+    s.showInLegend = s.showInLegend === "TRUE";
+    s.showProfitGraph = s.showProfitGraph === "TRUE";
+    s.allowsPremium = s.allowsPremium === "TRUE";
+    s.isActive = s.isActive === "TRUE";
+    s.textStatDescription = s.textStatDescription;
+    s.textStatUnitSingle = s.textStatUnitSingle;
+    s.textStatUnitPlural = s.textStatUnitPlural;
+    s.color = s.color;
+    s.perMonth = +s.perMonth;
+    s.numMonths = +s.numMonths;
+    s.perYear = +s.perYear;
+    s.numYears = +s.numYears;
+    s.discounts = +s.discounts;
+    s.serviceFees = +s.serviceFees;
+    s.movieCosts = +s.movieCosts;
+    s.movieFees = +s.movieFees;
+    return s;
   });
   console.log(data);
   console.log(membershipData);
@@ -42,10 +61,6 @@ function drawGraphs(spreadsheetContents, tabletop) {
   const firstYear = d3.min(data, d => moment(d.viewDate).year());
   const lastYear =  d3.max(data, d => moment(d.viewDate).year());
 
-  //Figure out per-service costs
-  const moviePassCost = +membershipData.find(m => m.service === "service-moviepass").totalSpent;
-  const sinemiaCost = +membershipData.find(m => m.service === "service-sinemia").totalSpent;
-
   //Draw Legends
   drawLegends(membershipData, "#legend")
 
@@ -55,8 +70,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
-  drawProfitGraph(data, "#moviepass-profit-graph", "service-moviepass", "Moviepass", moviePassCost, false, 885, 130, tooltipDiv);
-  drawProfitGraph(data, "#sinemia-profit-graph", "service-sinemia", "Sinemia", sinemiaCost, true, 885, 130, tooltipDiv);
+  drawAllProfitGraphs(data, membershipData, "#profit-charts", tooltipDiv);
 }
 
 //Draw a coarse summary of some basic statistics
@@ -95,19 +109,20 @@ function drawTextStats(data, membershipData, startYear, id) {
 //Draw a legend for service colors
 function drawLegends(membershipData, id) {
   var legend =  "<div style=\"display:flex;flex-wrap:wrap;width:70%;margin:auto;margin-bottom:15px;\">";
-  membershipData.filter(m => m.showInLegend === "TRUE")
+  membershipData.filter(m => m.showInLegend)
                 .forEach(m => {
-                                legend += "<div style=\"width:33%;margin-bottom:-5px;\">" +
-                                            "<table>" +
-                                              "<tbody>" +
-                                                "<tr>" +
-                                                  "<td class=\"" + m.service + "\" style=\"text-align:right;font-size:1.5em\">■</td>" +
-                                                  "<td style=\"padding-left:5px;padding-right:5px;font-size:0.75em\">" + m.legendText + "</td>" +
-                                                "</tr>" +
-                                              "</tbody>" +
-                                            "</table>" +
-                                          "</div>";
-                              });
+                  legend += 
+                    "<div style=\"width:33%;margin-bottom:-5px;\">" +
+                      "<table>" +
+                        "<tbody>" +
+                          "<tr>" +
+                            "<td class=\"" + m.service + "\" style=\"text-align:right;font-size:1.5em\">■</td>" +
+                            "<td style=\"padding-left:5px;padding-right:5px;font-size:0.75em\">" + m.legendText + "</td>" +
+                          "</tr>" +
+                        "</tbody>" +
+                      "</table>" +
+                    "</div>";
+                });
   legend += "</div>";
 
   d3.selectAll(id)
@@ -466,6 +481,36 @@ function drawTheaterGraph(data, id, width, tooltip) {
      });
 }
 
+//Add divs and draw all the requested profit charts
+function drawAllProfitGraphs(data, membershipData, id, tooltip) {
+  var profitGraphsDiv = d3.select(id);
+
+  membershipData.filter(s => s.showProfitGraph)
+                .sort((s1, s2) => s2.isActive - s1.isActive)
+                .forEach(s => {
+                  profitGraphsDiv.append("div")
+                    .attr("class", "section")
+                    .attr("id", s.service + "-profit-graph-section")
+                    .append("h2")
+                    .text(s.serviceNameSimple + " Profitability");
+
+                  d3.select("#" + s.service + "-profit-graph-section")
+                    .append("svg")
+                    .attr("id", s.service + "-profit-graph");
+
+                  var caption = "";
+                  caption += s.serviceNameSimple + " becomes profitable after the bar clears the hatched background. Movies are in chronological order.";
+                  caption += s.allowsPremium ? " Premium showings have hatched bars." : "";
+
+                  d3.select("#" + s.service + "-profit-graph-section")
+                    .append("p")
+                    .attr("class", "chart-caption")
+                    .text(caption);
+
+                  drawProfitGraph(data, "#" + s.service + "-profit-graph", s.service, s.serviceNameSimple, s.totalSpent, s.movieFees > 0, 885, 130, tooltip)
+                });
+}
+
 //Draw a chart of profits
 function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height, tooltip) {
   const svg = d3.select(id),
@@ -583,14 +628,15 @@ function genPatternedFillsAndStyles(membershipData) {
   //Add patterned fills for each service
   membershipData.map(s => s.service)
                 .forEach(s => {
-                  const fill = "<defs>" +
-                                "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
-                                  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
-                                    "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
-                                    "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"2\"/>" +
-                                  "</svg>" +
-                                "</pattern>" +
-                              "</defs>";
+                  const fill = 
+                    "<defs>" +
+                      "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
+                        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
+                          "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
+                          "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s + "-hatch\" stroke-width=\"2\"/>" +
+                        "</svg>" +
+                      "</pattern>" +
+                    "</defs>";
                   d3.select("body")
                     .append("svg")
                     .attr("width",  5)
