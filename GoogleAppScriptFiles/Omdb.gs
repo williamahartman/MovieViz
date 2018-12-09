@@ -29,6 +29,10 @@ function getOmdbData(name, year) {
   var response = UrlFetchApp.fetch(reqUrl);
   var responseData = JSON.parse(response.getContentText());
   
+  responseData.imdbID =   responseData.imdbID   || "";
+  responseData.Released = responseData.Released || "";
+  responseData.Poster =   responseData.Poster   || "";
+  
   return [responseData.imdbID, responseData.Released, responseData.Poster];
 }
 

@@ -8,7 +8,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
   // Define the div for the tooltip
   const tooltipDiv = d3.select("body")
                        .append("div")
-                       .attr("class",    "tooltip")
+                       .attr("class", "tooltip")
                        .style("opacity", 0);
 
   //get the data we need
@@ -197,6 +197,8 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         formatDay = d => "SMTWRFS"[d.getDay()],
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+  const filteredData = data.filter(d => d.viewDate.isValid());
+
   //SVG for the chart
   const svg = d3.select(id)
               .attr("class",  "calendar-chart")
@@ -224,8 +226,8 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
                   .datum(d3.timeFormat("%Y-%m-%d"))
 
   // Update days with viewing data
-  data.forEach(datum => {
-    let sameDayMovies = data.filter(d => moment(d.viewDate).isSame(datum.viewDate));
+  filteredData.forEach(datum => {
+    let sameDayMovies = filteredData.filter(d => moment(d.viewDate).isSame(datum.viewDate));
     rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => "url(#" + datum.service + "-stripe)")
@@ -300,7 +302,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
        .attr("fill",        "#eee8d5")
        .classed("double-feature-text", true)
        .text(d => {
-         let numMovies = data.filter(datum => moment(datum.viewDate).isSame(d, "day")).length;
+         let numMovies = filteredData.filter(datum => moment(datum.viewDate).isSame(d, "day")).length;
          return numMovies > 1 ? numMovies : "";
        });
 
@@ -311,6 +313,7 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
   //Sort and filter data, find min/max
   data.sort((a, b) => b.dateDiff - a.dateDiff);
   const filteredData = data.filter(d => d.firstRun)
+                           .filter(d => d.releaseDate.isValid())
                            .map(d => {
                              d.movieGraph = d.movie.length > 25 ? d.movie.substring(0, 25)+"..." : d.movie;
                              return d;
@@ -391,18 +394,20 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
 //Draw a graph of theater counts
 function drawTheaterGraph(data, id, width, tooltip) {
   //Data processing
-  const serviceList = getServiceList(data);
-  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
-  const theaterList = getTheaterList(data)
-                        .sort((a, b) => data.filter(d => b === d.theater).length - data.filter(d => a === d.theater).length);
-  data.sort((a, b) => {
+  const filteredData = data.filter(d => d.theater !== "")
+                           .filter(d => d.service !== "");
+  const serviceList = getServiceList(filteredData);
+  serviceList.sort((a, b) => filteredData.filter(d => b === d.service).length - filteredData.filter(d => a === d.service).length);
+  const theaterList = getTheaterList(filteredData)
+                        .sort((a, b) => filteredData.filter(d => b === d.theater).length - filteredData.filter(d => a === d.theater).length);
+                        filteredData.sort((a, b) => {
     const aToNum = (1000000000 * serviceList.findIndex(d => d === a.service)) + (moment(a.viewDate).unix()); 
     const bToNum = (1000000000 * serviceList.findIndex(d => d === b.service)) + (moment(b.viewDate).unix());
     return aToNum - bToNum;
   });
   const theaterTally = []
   theaterList.forEach(() => theaterTally.push(0));
-  data.forEach(d => {
+  filteredData.forEach(d => {
     const serviceIndex = theaterList.findIndex(t => t === d.theater);
     d.theaterGraphPos = theaterTally[serviceIndex];
     theaterTally[serviceIndex]++;
@@ -443,7 +448,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
 
   //Stacked bars
   g.selectAll(".bar")
-    .data(data)
+    .data(filteredData)
    .enter()
      .append("rect")
      .attr("fill", d => "url(#" + d.service + "-stripe)")
@@ -469,7 +474,8 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
         chartHeight = height - margin.top - margin.bottom;
 
   //Data Processing
-  const filteredData = data.filter(d => d.service === service);
+  const filteredData = data.filter(d => d.service === service)
+                           .filter(d => d.viewDate.isValid());
   filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix())
 
   var receivedAmount = 0;
@@ -626,8 +632,10 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
       dateDiffMessage = "<br/>(Thursday preview)";
     } else if(d.dateDiff === 0) {
       dateDiffMessage = "<br/>(Opening night)";
-    } else {
+    } else if(d.dateDiff > 0) {
       dateDiffMessage = "<br/>(" + d.dateDiff + " days after release)";
+    } else if(isNaN(d.dateDiff)){
+      dateDiffMessage = "<br/>(??? days after release)";;
     }
 
     movieTooltipHtml +=
@@ -639,10 +647,10 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
         "</span>" +
         "<div style=\"display:flex\";>" +
           "<div>" +
-            "<img src=\"" + d.posterUrl + "\" style=\"width:100px;margin-right:10px;\">" +
+            "<img src=\"" + (d.posterUrl === "" ? "placeholderposter.png" : d.posterUrl) + "\" style=\"width:100px;margin-right:10px;\">" +
           "</div>" +
           "<div>" +
-            "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + moment(d.releaseDate).format("M/D/YYYY") + "<br>" +
+            "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + (d.releaseDate.isValid() ? moment(d.releaseDate).format("M/D/YYYY") : "???") + "<br>" +
             "<span style=\"font-weight: 900;\">DATE WATCHED: </span>" + moment(d.viewDate).format("M/D/YYYY") + dateDiffMessage + "<br>" +
             "<span style=\"font-weight: 900;\">THEATER: </span>" + d.theater + "<br/>" +
             (d.theaterNumber === "" ? "<br/>" : "<span style=\"font-weight: 900;\">THEATER NUMBER: </span>" + d.theaterNumber + "<br><br>") +
