@@ -93,14 +93,20 @@ function drawTextStats(data, membershipData, startYear, id) {
   });
   statsTable += "</div>";
 
-  const numMovies = data.length;
+  const numMoviesTotal = data.length;
+  const numMoviesThisYear = data.filter(d => d.viewDate.year() == moment().year()).length;
   d3.select(id)
     .append("div")
     .html(
-      "<table>" + 
+      "<table width=100%>" + 
         "<tr>" + 
-          "<td style=\"color:#268bd2;font-size:25px;text-align:right;padding-bottom:30px;width:50px;\">" + numMovies + "</td>" +
-          "<td style=\"padding-left:15px;padding-bottom:30px\">movies in theaters since 1/1/" + startYear + "</td>" +
+          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:30px;width:50px;\">" + numMoviesThisYear + "</td>" +
+          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:30px\">" + (numMoviesThisYear == 1 ? "movie" : "movies") + " in theaters this year (so far...)</td>" +
+          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:30px;width:50px;\">" + numMoviesTotal + "</td>" +
+          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:30px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
+        "</tr>" + 
+        "<tr>" + 
+          
         "</tr>" + 
       "</table>" +
       statsTable
