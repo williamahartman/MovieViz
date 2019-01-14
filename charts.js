@@ -385,14 +385,14 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   // Days
   const rect = svg.append("g")
-                .attr("fill",   "#073642")
-                .attr("stroke", "#002b36")
                 .selectAll("rect")
                 .data(function (d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
                 .enter()
                   .append("rect")
                   .attr("width",  cellSize)
                   .attr("height", cellSize)
+                  .attr("fill", d => moment().isSameOrAfter(d, "month") ? "#073642" : "none")
+                  .attr("stroke", d => moment().isSameOrAfter(d, "month") ? "#002b36" : "none")
                   .attr("x",      d => d3.timeWeek.count(d3.timeYear(d), d) * cellSize)
                   .attr("y",      d => d.getDay() * cellSize)
                   .datum(d3.timeFormat("%Y-%m-%d"))
@@ -414,11 +414,11 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
   // Months
   svg.append("g")
      .attr("fill",   "none")
-     .attr("stroke", "#586e75")
      .selectAll("path")
      .data(d => d3.timeMonths(new Date(d, 0, 1), new Date(d + 1, 0, 1)))
      .enter()
      .append("path")
+     .attr("stroke", d => moment().isSameOrAfter(d) ? "#586e75" : "none")
      .attr("d", d => pathMonth(d, cellSize));
 
   // Year Labels
