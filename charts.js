@@ -16,10 +16,11 @@ function drawGraphs(spreadsheetContents, tabletop) {
   var membershipData = spreadsheetContents["Memberships"].elements;
 
   //Clean up data
-  data = data.map(d => { 
-    d.viewDate = moment(d.viewDate, "MM/DD/YYYY");
+  data = data.map(d => {
     d.releaseDate = moment(d.releaseDate, "MM/DD/YYYY")
     d.dateDiff = moment(d.viewDate, "MM/DD/YYYY").diff(d.releaseDate, "days");
+    d.viewDate = moment(d.viewDate + " " + d.time, "MM/DD/YYYY h:mm:ss a");
+    d.isTimeSet = d.time !== "";
     d.firstRun = d.firstRun === "Yes";
     d.isPremium = d.format !== "DCP" && d.format !== "35mm";
     d.serviceName = d.service;
@@ -69,6 +70,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
   drawRatingsGraph(data, "#ratings-graph", 885, tooltipDiv);
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDayOfWeekGraph(data, "#day-of-week-graph", 885, tooltipDiv);
+  drawShowTimeGraph(data, "#show-time-graph", 885, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
   drawAllProfitGraphs(data, membershipData, "#profit-charts", tooltipDiv);
@@ -281,6 +283,86 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
      });
 }
 
+//Draw a graph of show times
+function drawShowTimeGraph(data, id, width, tooltip) {
+  //Data processing
+  const serviceList = getServiceList(data);
+  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
+
+  var filteredData = data.filter(d => d.isTimeSet)
+                          .map(d => {
+                                  var hours = d.viewDate.hour();
+                                  var minutes = d.viewDate.minute();
+                                  d.viewTime = (hours * 60) + minutes;
+                                  return d;
+                                });
+  var hist = d3.histogram()
+               .value((d) => d.viewTime)
+               .domain([0, 60 * 24])
+               .thresholds(Array.from({length: 48}, (v, k) => k * 30))
+               (filteredData);
+
+  hist.forEach(bin => {
+    for(i = 0; i < bin.length; i++) {
+      bin[i].showtimeGraphPos = i;
+      bin[i].x0 = bin.x0;
+      bin[i].x1 = bin.x1;
+    }
+  });
+  const maxShowtimeBarHeight =  d3.max(filteredData, d => d.showtimeGraphPos);
+
+  //Svg junk
+  const svg = d3.select(id),
+      calculatedHeight = 9 * maxShowtimeBarHeight;
+      margin = {top: 20, right: 50, bottom: 30, left: 50},
+      chartWidth = width - margin.left - margin.right,
+      height = calculatedHeight + margin.top + margin.bottom;
+
+  //Scales
+  const x = d3.scaleLinear().domain([0, 60 * 24]).range([0, chartWidth]);
+  const y = d3.scaleLinear().domain([0, maxShowtimeBarHeight]).range([0, calculatedHeight]);
+
+  //SVG Setup
+  const g = svg.attr("width",  "100%")
+                .attr("viewBox", "0 0 " + width + " " + height)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  //X-axis
+  g.append("g")
+      .attr("class", "xaxis")
+      .attr("transform", "translate(0," + calculatedHeight + ")")
+      .call(d3.axisBottom(x)
+              .tickSizeInner([10])
+              .tickValues(Array.from({length: 13}, (v, k) => k * 120))
+              .tickFormat(d => {
+                var hour = Math.floor(d / 60);
+                var minute = d % 60;
+                var ampm = hour >= 12 ? "PM" : "AM";
+                hour = hour == 0 ? 12 : hour;
+                return (hour <= 12 ? hour : hour - 12) + ":" + d3.format("02")(minute) + " " + ampm;
+              }));
+
+  //Stacked bars
+  g.selectAll(".bar")
+      .data(filteredData)
+    .enter()
+      .append("rect")
+      .attr("fill", d => "url(#" + d.service + "-stripe)")
+      .attr("class", "bar")
+      .attr("class", d => d.isPremium ? "" : d.service)
+      .attr("y", d => calculatedHeight - y(d.showtimeGraphPos + 1))
+      .attr("x", d => x(d.x0))
+      .attr("width", d => x(d.x1) - x(d.x0) - 1)
+      .attr("height", () => y(1) - 0.5)
+      .on("mouseout",  () => hideTooltip(tooltip))
+      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
+      .on("mouseover", d => {
+        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+        showTooltip(tooltip);
+      });
+}
+
 //Draw a calendar chart with movies on it.
 function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip) {
   const countDay = d => d.getDay(),
@@ -317,7 +399,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   // Update days with viewing data
   filteredData.forEach(datum => {
-    let sameDayMovies = filteredData.filter(d => moment(d.viewDate).isSame(datum.viewDate));
+    let sameDayMovies = filteredData.filter(d => moment(d.viewDate).isSame(datum.viewDate, "day"));
     rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => "url(#" + datum.service + "-stripe)")
@@ -467,11 +549,11 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
         return (d.isPremium ? "" : d.service + " ") + darker;
       })
       .classed("bar", true)
-      .attr("x",  d => d.dateDiff > 0 ? x(0) : d.dateDiff === 0 ? x(-0.25) : x(d.dateDiff))
+      .attr("x",  d => d.dateDiff > 0 ? x(0) : d.dateDiff === 0 ? x(0) - 2 : x(d.dateDiff))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.movieGraph))
       .attr("width",   d => { 
-        return d.dateDiff == 0 ? x(0.5) - x(0) : Math.abs(x(d.dateDiff) - x(0)); 
+        return d.dateDiff == 0 ? 4 : Math.abs(x(d.dateDiff) - x(0)); 
       })
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
@@ -574,7 +656,7 @@ function drawAllProfitGraphs(data, membershipData, id, tooltip) {
                     .attr("id", s.service + "-profit-graph");
 
                   var caption = "";
-                  caption += s.serviceNameSimple + " becomes profitable after the bar clears the hatched background. Movies are in chronological order.";
+                  caption += s.serviceNameSimple + " becomes profitable after the bar clears the hatched background.";
                   caption += s.allowsPremium ? " Premium showings have hatched bars." : "";
 
                   d3.select("#" + s.service + "-profit-graph-section")
@@ -773,6 +855,7 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
           "<div>" +
             "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + (d.releaseDate.isValid() ? moment(d.releaseDate).format("M/D/YYYY") : "???") + "<br>" +
             "<span style=\"font-weight: 900;\">DATE WATCHED: </span>" + moment(d.viewDate).format("M/D/YYYY") + dateDiffMessage + "<br>" +
+            (d.isTimeSet ? "<span style=\"font-weight: 900;\">SHOW TIME: </span>" + moment(d.viewDate).format("h:mm A") + "<br>" : "") +
             "<span style=\"font-weight: 900;\">THEATER: </span>" + d.theater + "<br/>" +
             (d.theaterNumber === "" ? "<br/>" : "<span style=\"font-weight: 900;\">THEATER NUMBER: </span>" + d.theaterNumber + "<br><br>") +
             "<span style=\"font-weight: 900;\">PRICE: </span>" + d3.format("$,.2f")(d.price) + "<br>" +
