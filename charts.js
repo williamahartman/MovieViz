@@ -261,6 +261,7 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
    .attr("class", "xaxis")
    .attr("transform", "translate(0," + calculatedHeight + ")")
    .call(d3.axisBottom(x)
+           .tickSizeInner([10])
            .tickFormat(d => ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"][d]));
 
   //Stacked bars
@@ -330,18 +331,26 @@ function drawShowTimeGraph(data, id, width, tooltip) {
   
   //X-axis
   g.append("g")
-      .attr("class", "xaxis")
-      .attr("transform", "translate(0," + calculatedHeight + ")")
-      .call(d3.axisBottom(x)
-              .tickSizeInner([10])
-              .tickValues(Array.from({length: 13}, (v, k) => k * 120))
-              .tickFormat(d => {
-                var hour = Math.floor(d / 60);
-                var minute = d % 60;
-                var ampm = hour >= 12 ? "PM" : "AM";
-                hour = hour == 0 ? 12 : hour;
-                return (hour <= 12 ? hour : hour - 12) + ":" + d3.format("02")(minute) + " " + ampm;
-              }));
+   .attr("class", "xaxis")
+   .attr("transform", "translate(0," + calculatedHeight + ")")
+   .call(d3.axisBottom(x)
+           .tickSizeInner([10])
+           .tickValues(Array.from({length: 13}, (v, k) => k * 120))
+           .tickFormat(d => {
+             var hour = Math.floor(d / 60);
+             var minute = d % 60;
+             var ampm = hour >= 12 ? "PM" : "AM";
+             hour = hour == 0 ? 12 : hour;
+             return (hour <= 12 ? hour : hour - 12) + ":" + d3.format("02")(minute) + " " + ampm;
+           }));
+
+  g.append("g")
+   .attr("class", "xaxis-minor-tick")
+   .attr("transform", "translate(0," + calculatedHeight + ")")
+   .call(d3.axisBottom(x)
+           .tickSizeInner([10])
+           .tickValues(Array.from({length: 12}, (v, k) => (k * 120) + 60))
+           );
 
   //Stacked bars
   g.selectAll(".bar")
@@ -446,14 +455,14 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   // Month Labels
   svg.selectAll(".legend")
-     .data(months)
+     .data(d => d3.timeMonths(new Date(d, 0, 1), new Date(d + 1, 0, 1)))
      .enter()
      .append("g")
      .attr("class",        "legend")
      .attr("transform",    (d, i) => "translate(" + (((i + 1) * cellSize * 4.333) - cellSize) + ", -5)")
      .append("text")
      .attr("class",        (d, i) => months[i])
-     .attr("fill",         "#93a1a1")
+     .attr("fill",         (d) =>  moment().isSameOrAfter(d) ? "#93a1a1" : "none")
      .attr("font-family",  "sans-serif")
      .attr("font-size",    10)
      .style("text-anchor", "end")

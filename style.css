@@ -44,12 +44,12 @@ div.tooltip {
 /* Graph styles */
 .xaxis line{
   stroke-width: 0.5px;
-  stroke: #004052;
+  stroke: #657b83;
 }
 
 .xaxis path{
   stroke-width: 0.5px;
-  stroke: #004052;
+  stroke: #657b83;
 }
 
 .xaxis text{
@@ -58,22 +58,36 @@ div.tooltip {
 
 .yaxis line{
   stroke-width: 0.5px;
-  stroke: #004052;
+  stroke: #657b83;
 }
 
 .yaxis path{
   stroke-width: 0.5px;
-  stroke: #004052;
+  stroke: #657b83;
 }
 
 .yaxis text{
   fill: #93a1a1ed;
 }
 
+.xaxis-minor-tick line{
+  stroke: none;
+}
+
+.xaxis-minor-tick path{
+  stroke: none;
+}
+
+.xaxis-minor-tick text{
+  fill: none;
+}
+
 .tick line {
   stroke-width: 0.5px;
-  stroke: #004052;
+  stroke: #324f5a;
 }
+
+
 
 .double-feature-text {
   dominant-baseline: central;
