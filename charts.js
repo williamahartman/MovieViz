@@ -28,6 +28,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
     d.price = +d.price;
     d.fees = +d.fees;
     d.rating = +d.rating;
+    d.runTime = +d.runTime;
     return d;
   });
   membershipData = membershipData.map(s => {
@@ -97,20 +98,23 @@ function drawTextStats(data, membershipData, startYear, id) {
 
   const numMoviesTotal = data.length;
   const numMoviesThisYear = data.filter(d => d.viewDate.year() == moment().year()).length;
+  const numMinutesInMovies = data.reduce((acc, n) => acc + n.runTime, 0); 
   d3.select(id)
     .append("div")
     .html(
       "<table width=100%>" + 
         "<tr>" + 
-          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:30px;width:50px;\">" + numMoviesThisYear + "</td>" +
-          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:30px\">" + (numMoviesThisYear == 1 ? "movie" : "movies") + " in theaters this year (so far...)</td>" +
-          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:30px;width:50px;\">" + numMoviesTotal + "</td>" +
-          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:30px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
-        "</tr>" + 
-        "<tr>" + 
-          
+          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesThisYear + "</td>" +
+          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesThisYear == 1 ? "movie" : "movies") + " in theaters this year (so far...)</td>" +
+          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesTotal + "</td>" +
+          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
       "</table>" +
+      "<div style=\"margin-bottom:30px;margin-left:-60px;text-align:center;\">" + 
+        "<span style=\"font-size:20px\">For a total of </span>" +
+        "<span style=\"color:#fdf6e3;font-size:24px;\">" + minsToBetterUnits(numMinutesInMovies) + "</span>" +
+        "<span style=\"font-size:20px\"> in movie theaters</span>" +
+      "</div>" +
       statsTable
     );
 }
@@ -893,6 +897,31 @@ function numToStars(rating) {
   }
 
   return starStr;
+}
+
+function minsToBetterUnits(numMins) {
+  var numCompleteDays  = Math.floor(numMins / 60 / 24);
+  var numLeftoverHours = Math.floor(numMins / 60) - (numCompleteDays * 24);
+  var numLeftoverMinutes = Math.floor(numMins) - (numCompleteDays * 24 * 60) - (numLeftoverHours * 60);
+  
+  var stringDescription = "";
+
+  if(numCompleteDays > 0) {
+    var unit = numCompleteDays == 1 ? "day" : "days"
+    stringDescription += numCompleteDays + " " + unit;
+  }
+  if(numLeftoverHours  > 0) {
+    var divider = numCompleteDays > 0 ? ", " : ""
+    var unit = numLeftoverHours == 1 ? "hour" : "hours"
+    stringDescription += divider + numLeftoverHours + " " + unit;
+  }
+  if(numLeftoverMinutes  > 0) {
+    var divider = numLeftoverHours > 0 || numCompleteDays > 0 ? ", and " : ""
+    var unit = numLeftoverMinutes == 1 ? "minute" : "minutes"
+    stringDescription += divider + numLeftoverMinutes + " " + unit;
+  }
+
+  return stringDescription;
 }
 
 function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {

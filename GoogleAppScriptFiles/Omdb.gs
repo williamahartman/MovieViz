@@ -6,17 +6,17 @@ function updateData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheets()[0];
   
-  var range = sheet.getRange("$A$2:$P1000");
+  var range = sheet.getRange("$A$2:$Q1000");
   var rangeVals = range.getValues();
   var i;
   for(i = 0; i < rangeVals.length; i++) {
     var name = rangeVals[i][0];
     var year = rangeVals[i][1];
-    var omdbDataColumns = "" + rangeVals[i][2] + rangeVals[i][3] + rangeVals[i][4];
+    var omdbDataColumns = "" + rangeVals[i][2] + rangeVals[i][3] + rangeVals[i][4] + rangeVals[i][5];
     
     if(!isEmpty(name) && isEmpty(omdbDataColumns)) {
       var currentRow = i + 2;
-      sheet.getRange("$C$" + currentRow + ":$E" + currentRow).setValues([getOmdbData(name, year)]);
+      sheet.getRange("$C$" + currentRow + ":$F" + currentRow).setValues([getOmdbData(name, year)]);
     }
   }
 }
@@ -32,8 +32,9 @@ function getOmdbData(name, year) {
   responseData.imdbID =   responseData.imdbID   || "";
   responseData.Released = responseData.Released || "";
   responseData.Poster =   responseData.Poster   || "";
+  responseData.Runtime =  parseInt(responseData.Runtime)  || 0;
   
-  return [responseData.imdbID, responseData.Released, responseData.Poster];
+  return [responseData.Runtime, responseData.imdbID, responseData.Released, responseData.Poster];
 }
 
 function isEmpty(s) {

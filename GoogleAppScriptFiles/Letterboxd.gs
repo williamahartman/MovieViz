@@ -3,7 +3,7 @@ function updateRatings() {
     
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheets()[0];
-  var range = sheet.getRange("$C$2:$O1000");
+  var range = sheet.getRange("$D$2:$P1000");
   var rangeVals = range.getValues();
   var i;
   for(i = 0; i < rangeVals.length; i++) {
@@ -18,7 +18,7 @@ function updateRatings() {
     
     if(rating) {
       var currentRow = i + 2;
-      sheet.getRange("O" + currentRow).setValue(rating.rating);
+      sheet.getRange("P" + currentRow).setValue(rating.rating);
     }
     rating = undefined;
   }
@@ -60,7 +60,6 @@ function getRatings() {
       rating: i.relationships[0].relationship.rating
     });
   });
-  
   return ratings;
 }
 
