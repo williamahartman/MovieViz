@@ -110,7 +110,7 @@ function drawTextStats(data, membershipData, startYear, id) {
           "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
       "</table>" +
-      "<div style=\"margin-bottom:30px;margin-left:-60px;text-align:center;\">" + 
+      "<div style=\"width:90%;margin-bottom:30px;text-align:center;\">" + 
         "<span style=\"font-size:20px\">For a total of </span>" +
         "<span style=\"color:#fdf6e3;font-size:24px;\">" + minsToBetterUnits(numMinutesInMovies) + "</span>" +
         "<span style=\"font-size:20px\"> in movie theaters</span>" +
