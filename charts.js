@@ -159,8 +159,8 @@ function drawRatingsGraph(data, id, width, tooltip) {
   });
 
   filteredData.sort((a, b) => {
-    const aToNum = (10 * serviceList.findIndex(d => d === a.service)); 
-    const bToNum = (10 * serviceList.findIndex(d => d === b.service));
+    const aToNum = (10 * serviceList.findIndex(d => d === a.service) - a.isPremium); 
+    const bToNum = (10 * serviceList.findIndex(d => d === b.service) - b.isPremium);
     return aToNum - bToNum;
   });
 
@@ -222,16 +222,9 @@ function drawRatingsGraph(data, id, width, tooltip) {
 //Draw a graph of day-of-the-week frequencies
 function drawDayOfWeekGraph(data, id, width, tooltip) {
   //Data processing
-  const serviceList = getServiceList(data);
-  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
   const dayList = [0, 1, 2, 3, 4, 5, 6];
-
   const filteredData = data.filter(d => d.viewDate.isValid());
-  filteredData.sort((a, b) => {
-    const aToNum = (10 * serviceList.findIndex(d => d === a.service)); 
-    const bToNum = (10 * serviceList.findIndex(d => d === b.service));
-    return aToNum - bToNum;
-  });
+  filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix());
 
   const dayTally = []
   dayList.forEach(() => dayTally.push(0));
@@ -291,9 +284,6 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
 //Draw a graph of show times
 function drawShowTimeGraph(data, id, width, tooltip) {
   //Data processing
-  const serviceList = getServiceList(data);
-  serviceList.sort((a, b) => data.filter(d => b === d.service).length - data.filter(d => a === d.service).length);
-
   var filteredData = data.filter(d => d.isTimeSet)
                           .map(d => {
                                   var hours = d.viewDate.hour();
@@ -301,6 +291,8 @@ function drawShowTimeGraph(data, id, width, tooltip) {
                                   d.viewTime = (hours * 60) + minutes;
                                   return d;
                                 });
+  filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix());
+                                  
   var hist = d3.histogram()
                .value((d) => d.viewTime)
                .domain([0, 60 * 24])
@@ -581,15 +573,12 @@ function drawTheaterGraph(data, id, width, tooltip) {
   //Data processing
   const filteredData = data.filter(d => d.theater !== "")
                            .filter(d => d.service !== "");
-  const serviceList = getServiceList(filteredData);
-  serviceList.sort((a, b) => filteredData.filter(d => b === d.service).length - filteredData.filter(d => a === d.service).length);
+  
   const theaterList = getTheaterList(filteredData)
                         .sort((a, b) => filteredData.filter(d => b === d.theater).length - filteredData.filter(d => a === d.theater).length);
-                        filteredData.sort((a, b) => {
-    const aToNum = (1000000000 * serviceList.findIndex(d => d === a.service)) + (moment(a.viewDate).unix()); 
-    const bToNum = (1000000000 * serviceList.findIndex(d => d === b.service)) + (moment(b.viewDate).unix());
-    return aToNum - bToNum;
-  });
+
+  filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix());
+
   const theaterTally = []
   theaterList.forEach(() => theaterTally.push(0));
   filteredData.forEach(d => {
