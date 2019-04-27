@@ -316,7 +316,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
   const y = d3.scaleLinear().domain([0, maxShowtimeBarHeight]).range([0, calculatedHeight]);
 
   //SVG Setup
-  const g = svg.attr("width",  chartWidth)
+  const g = svg.attr("width",  width)
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -371,6 +371,9 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const filteredData = data.filter(d => d.viewDate.isValid());
+  // filteredData.sort((a, b) => moment(b.viewDate).unix() - moment(a.dateDiff).unix());
+  console.log("aaa");
+  console.log(filteredData);
 
   //SVG for the chart
   const svg = d3.select(id)
@@ -379,7 +382,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
               .data(yearRange)
               .enter()
                 .append("svg")
-                .attr("width",  width - ((width - cellSize * 53) / 2))
+                .attr("width",  width)
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
@@ -403,7 +406,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
     let sameDayMovies = filteredData.filter(d => moment(d.viewDate).isSame(datum.viewDate, "day"));
     rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
-        .attr("fill", () => "url(#" + datum.service + "-stripe)")
+        .attr("fill", () => datum.isPremium ? "url(#" + datum.service + "-stripe)" : "none")
         .on("mouseout",  () => hideTooltip(tooltip))
         .on("mousemove", d => updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY))
         .on("mouseover", d => {
@@ -484,13 +487,13 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 //Draw a chart of movie date distances
 function drawDateDiffBarGraph(data, id, width, tooltip) {
   //Sort and filter data, find min/max
-  data.sort((a, b) => b.dateDiff - a.dateDiff);
   const filteredData = data.filter(d => d.firstRun)
                            .filter(d => d.releaseDate.isValid())
                            .map(d => {
                              d.movieGraph = d.movie.length > 25 ? d.movie.substring(0, 25)+"..." : d.movie;
                              return d;
                            });
+  filteredData.sort((a, b) => b.dateDiff - a.dateDiff);
   const minDiff = d3.min(filteredData, d => d.dateDiff);
   const maxDiff = d3.max(filteredData, d => d.dateDiff);
 
@@ -508,7 +511,7 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
   y.domain(filteredData.map(d => d.movieGraph)).padding(0.1);
 
   //SVG setup
-  const g = svg.attr("width",  chartWidth)
+  const g = svg.attr("width",  width)
                .attr("viewBox", "0 0 " + width + " " + height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -598,7 +601,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
   y.domain(theaterList).padding(0.1);
 
   //SVG Setup
-  const g = svg.attr("width",  chartWidth)
+  const g = svg.attr("width",  width)
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
