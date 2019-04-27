@@ -1,6 +1,11 @@
 /* General page style stuff */
 body {
-  margin-bottom: 150px;
+  border-image: 
+      url(filmStripBorder.svg) 
+      33% / 
+      0px 40px 0px 40px / 
+      40px 
+      round;
 }
 
 .section {
@@ -86,8 +91,6 @@ div.tooltip {
   stroke-width: 0.5px;
   stroke: #324f5a;
 }
-
-
 
 .double-feature-text {
   dominant-baseline: central;
