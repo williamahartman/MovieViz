@@ -68,9 +68,9 @@ function drawGraphs(spreadsheetContents, tabletop) {
 
   //Draw Charts
   drawTextStats(data, membershipData, firstYear, "#text-stats");
-  drawRatingsGraph(data, "#ratings-graph", 885, tooltipDiv);
+  drawRatingsGraph(data, "#ratings-graph", 435, tooltipDiv);
   drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
-  drawDayOfWeekGraph(data, "#day-of-week-graph", 885, tooltipDiv);
+  drawDayOfWeekGraph(data, "#day-of-week-graph", 385, tooltipDiv);
   drawShowTimeGraph(data, "#show-time-graph", 885, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
   drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
@@ -79,11 +79,11 @@ function drawGraphs(spreadsheetContents, tabletop) {
 
 //Draw a coarse summary of some basic statistics
 function drawTextStats(data, membershipData, startYear, id) {
-  var statsTable =  "<div style=\"display:flex;flex-wrap:wrap;\">";
+  var statsTable =  "<div style=\"display:flex;flex-wrap:wrap;justify-content: space-evenly;align-items: flex-start;\">";
   membershipData.forEach(m => {
     const numFromService = data.filter(d => d.service === m.service).length;
     statsTable += 
-      "<div style=\"width:33%\">" +
+      "<div style=\"width:265px;flex-grow:1;\">" +
         "<table>" +
           "<tbody>" +
             "<tr>" +
@@ -110,7 +110,7 @@ function drawTextStats(data, membershipData, startYear, id) {
           "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
         "</tr>" + 
       "</table>" +
-      "<div style=\"width:90%;margin-bottom:30px;text-align:center;\">" + 
+      "<div style=\"min-width=420px;margin-bottom:30px;text-align:center;\">" + 
         "<span style=\"font-size:20px\">For a total of </span>" +
         "<span style=\"color:#fdf6e3;font-size:24px;\">" + minsToBetterUnits(numMinutesInMovies) + "</span>" +
         "<span style=\"font-size:20px\"> in movie theaters</span>" +
@@ -121,7 +121,7 @@ function drawTextStats(data, membershipData, startYear, id) {
 
 //Draw a legend for service colors
 function drawLegends(membershipData, id) {
-  var legend =  "<div style=\"display:flex;flex-wrap:wrap;width:70%;margin:auto;margin-bottom:15px;\">";
+  var legend =  "<div style=\"display:flex;flex-wrap:wrap;max-width:605px;margin:auto;margin-bottom:15px;\">";
   membershipData.filter(m => m.showInLegend)
                 .forEach(m => {
                   legend += 
@@ -176,21 +176,19 @@ function drawRatingsGraph(data, id, width, tooltip) {
   //Svg junk
   const svg = d3.select(id),
       calculatedHeight = maxRatings * 9,
-      margin = {top: 20, right: 225, bottom: 30, left: 225},
-      chartWidth = width - margin.left - margin.right,
+      margin = {top: 20, bottom: 30},
       height = calculatedHeight + margin.top + margin.bottom;
 
   //Scales
-  const x = d3.scaleBand().range([chartWidth, 0]);
+  const x = d3.scaleBand().range([width, 0]);
   const y = d3.scaleLinear().range([0, calculatedHeight]);
   x.domain(ratingsList.reverse()).padding(0.025);
   y.domain([0, maxRatings]);
 
   //SVG Setup
-  const g = svg.attr("width",  "100%")
+  const g = svg.attr("width",  width)
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
-               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   
   //X-axis
   g.append("g")
@@ -237,21 +235,19 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
   //Svg junk
   const svg = d3.select(id),
       calculatedHeight = maxDayNum * 9,
-      margin = {top: 20, right: 250, bottom: 30, left: 250},
-      chartWidth = width - margin.left - margin.right,
+      margin = {top: 20, bottom: 30},
       height = calculatedHeight + margin.top + margin.bottom;
 
   //Scales
-  const x = d3.scaleBand().range([chartWidth, 0]);
+  const x = d3.scaleBand().range([width, 0]);
   const y = d3.scaleLinear().range([0, calculatedHeight]);
   x.domain(dayList.reverse()).padding(0.25);
   y.domain([0, maxDayNum]);
 
   //SVG Setup
-  const g = svg.attr("width",  "100%")
+  const g = svg.attr("width",  width)
                .attr("viewBox", "0 0 " + width + " " + height)
-               .append("g")
-               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+               .append("g");
   
   //X-axis
   g.append("g")
@@ -320,7 +316,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
   const y = d3.scaleLinear().domain([0, maxShowtimeBarHeight]).range([0, calculatedHeight]);
 
   //SVG Setup
-  const g = svg.attr("width",  "100%")
+  const g = svg.attr("width",  chartWidth)
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -383,7 +379,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
               .data(yearRange)
               .enter()
                 .append("svg")
-                .attr("width",  "100%")
+                .attr("width",  width - ((width - cellSize * 53) / 2))
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
@@ -512,7 +508,7 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
   y.domain(filteredData.map(d => d.movieGraph)).padding(0.1);
 
   //SVG setup
-  const g = svg.attr("width",  "100%")
+  const g = svg.attr("width",  chartWidth)
                .attr("viewBox", "0 0 " + width + " " + height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -602,7 +598,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
   y.domain(theaterList).padding(0.1);
 
   //SVG Setup
-  const g = svg.attr("width",  "100%")
+  const g = svg.attr("width",  chartWidth)
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -654,6 +650,8 @@ function drawAllProfitGraphs(data, membershipData, id, tooltip) {
                     .text(s.serviceNameSimple + " Profitability");
 
                   d3.select("#" + s.service + "-profit-graph-section")
+                    .append("div")
+                    .attr("class", "scroller")
                     .append("svg")
                     .attr("id", s.service + "-profit-graph");
 
@@ -696,7 +694,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
   y.domain([service]).padding(0.25);
 
   //SVG setup
-  const g = svg.attr("width",  "100%")
+  const g = svg.attr("width",  chartWidth)
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");

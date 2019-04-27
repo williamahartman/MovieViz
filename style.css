@@ -8,14 +8,26 @@ body {
       round;
 }
 
+svg {
+  display: block;
+  margin: auto;
+}
+
 .section {
   margin-top: 50px; 
   margin-bottom: 75px;
 }
 
+.scroller {
+  overflow: auto;
+  margin-left: -1.5em;
+  margin-right: -1.5em;
+}
+
 .section-small {
   margin-top: 50px; 
   margin-bottom: 50px;
+  overflow: auto;
 }
 
 .chart-caption {
