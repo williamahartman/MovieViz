@@ -3,6 +3,8 @@ const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFX
 Tabletop.init({ key: public_spreadsheet_url,
                 callback: drawGraphs,
                 wanted: ["Movies", "Memberships"]});
+
+var tooltipClicked = false;
             
 function drawGraphs(spreadsheetContents, tabletop) {
   // Define the div for the tooltip
@@ -209,6 +211,7 @@ function drawRatingsGraph(data, id, width, tooltip) {
      .attr("x", d => x(d.rating))
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
+     .on("click", () => tooltipClicked = true)
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
@@ -269,6 +272,7 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
      .attr("x", d => x(d.viewDate.day()))
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
+     .on("click", () => tooltipClicked = true)
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
@@ -356,6 +360,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
       .attr("x", d => x(d.x0))
       .attr("width", d => x(d.x1) - x(d.x0) - 1)
       .attr("height", () => y(1) - 0.5)
+      .on("click", () => tooltipClicked = true)
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
@@ -371,9 +376,6 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const filteredData = data.filter(d => d.viewDate.isValid());
-  // filteredData.sort((a, b) => moment(b.viewDate).unix() - moment(a.dateDiff).unix());
-  console.log("aaa");
-  console.log(filteredData);
 
   //SVG for the chart
   const svg = d3.select(id)
@@ -407,6 +409,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
     rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => datum.isPremium ? "url(#" + datum.service + "-stripe)" : "none")
+        .on("click", () => tooltipClicked = true)
         .on("mouseout",  () => hideTooltip(tooltip))
         .on("mousemove", d => updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY))
         .on("mouseover", d => {
@@ -559,6 +562,7 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
       .attr("width",   d => { 
         return d.dateDiff == 0 ? 4 : Math.abs(x(d.dateDiff) - x(0)); 
       })
+      .on("click", () => tooltipClicked = true)
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
@@ -631,6 +635,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
      .attr("y", d => y(d.theater))
      .attr("height", y.bandwidth())
      .attr("width", () => x(1) - 0.5)
+     .on("click", () => tooltipClicked = true)
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
@@ -735,6 +740,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
       .attr("width",   d => x(d.price) - 0.5)
+      .on("click", () => tooltipClicked = true)
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
@@ -827,6 +833,11 @@ function getTheaterList(data) {
 
 function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
   let movieTooltipHtml = "";
+  movieTooltipHtml +=
+  "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
+    "style=\"width:20px;height:20px;font-size:13px;text-align:center;margin-left:auto\">" +
+    "🗙" +
+  "</div>";
 
   movies.forEach( d => {
     let dateDiffMessage;
@@ -844,13 +855,22 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
       dateDiffMessage = "<br/>(??? days after release)";;
     }
 
+    let imdbUrl = "http://imdb.com/title/" + d.imdbId;
+    let letterboxdUrl = "https://letterboxd.com/imdb/" + d.imdbId;
+
     movieTooltipHtml +=
       "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
-        "<span style=\"font-size:1.5em;text-align:center;margin-bottom:7px;\">" + 
+        "<span style=\"font-size:1.5em;text-align:center\">" + 
           d.movie + 
           "<br>" +
           numToStars(d.rating) +
         "</span>" +
+        "<span style=\"font-weight:900;text-align:center;margin-bottom:15px;\">" +
+          "<a class=\"clickable-on-tooltip\" href=\"" + imdbUrl + "\" target=\"_blank\">IMDB</a>" +
+          " " + 
+          "<a class=\"clickable-on-tooltip\" href=\"" + letterboxdUrl + "\" target=\"_blank\">LETTERBOXD</a><br>" +
+        "</span>" +
+        
         "<div style=\"display:flex\";>" +
           "<div>" +
             "<img src=\"" + (d.posterUrl === "" ? "placeholderposter.png" : d.posterUrl) + "\" style=\"width:100px;margin-right:10px;\">" +
@@ -900,12 +920,12 @@ function minsToBetterUnits(numMins) {
     var unit = numCompleteDays == 1 ? "day" : "days"
     stringDescription += numCompleteDays + " " + unit;
   }
-  if(numLeftoverHours  > 0) {
+  if(numLeftoverHours > 0) {
     var divider = numCompleteDays > 0 ? ", " : ""
     var unit = numLeftoverHours == 1 ? "hour" : "hours"
     stringDescription += divider + numLeftoverHours + " " + unit;
   }
-  if(numLeftoverMinutes  > 0) {
+  if(numLeftoverMinutes > 0) {
     var divider = numLeftoverHours > 0 || numCompleteDays > 0 ? ", and " : ""
     var unit = numLeftoverMinutes == 1 ? "minute" : "minutes"
     stringDescription += divider + numLeftoverMinutes + " " + unit;
@@ -915,24 +935,26 @@ function minsToBetterUnits(numMins) {
 }
 
 function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
-  tooltip.html(toolTipHtml);
+  if(!tooltipClicked) {
+    tooltip.html(toolTipHtml);
 
-  const tooltipWidth =   tooltip.node().clientWidth;
-  const tooltipHeight =  tooltip.node().clientHeight;
-  const documentWidth =  document.documentElement.scrollWidth;
-  const documentHeight = window.scrollY + window.innerHeight;
-
-  var xPosCorrected = xPos;
-  if(xPos + tooltipWidth > documentWidth) {
-    xPosCorrected = documentWidth - tooltipWidth
+    const tooltipWidth =   tooltip.node().clientWidth;
+    const tooltipHeight =  tooltip.node().clientHeight;
+    const documentWidth =  document.documentElement.scrollWidth;
+    const documentHeight = window.scrollY + window.innerHeight;
+  
+    var xPosCorrected = xPos;
+    if(xPos + tooltipWidth > documentWidth) {
+      xPosCorrected = documentWidth - tooltipWidth
+    }
+    var yPosCorrected = yPos;
+    if(yPos + tooltipHeight > documentHeight) {
+      yPosCorrected = documentHeight - tooltipHeight;
+    }
+  
+    tooltip.style("left", xPosCorrected + "px")
+           .style("top",  yPosCorrected + "px");
   }
-  var yPosCorrected = yPos;
-  if(yPos + tooltipHeight > documentHeight) {
-    yPosCorrected = documentHeight - tooltipHeight;
-  }
-
-  tooltip.style("left", xPosCorrected + "px")
-         .style("top",  yPosCorrected + "px");
 }
 
 function showTooltip(tooltip) {
@@ -942,9 +964,16 @@ function showTooltip(tooltip) {
 }
 
 function hideTooltip(tooltip) {
-  tooltip.transition()
-         .duration(200)
-         .style("opacity", 0);
+  if(!tooltipClicked) {
+    tooltip.transition()
+           .duration(200)
+           .style("opacity", 0);
+  }
+}
+
+function closeTooltip(tooltip) {
+  tooltipClicked = false;
+  hideTooltip(tooltip);
 }
 
 function pathMonth(t0, cellSize) {
