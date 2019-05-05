@@ -404,7 +404,11 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
   // Days
   const rect = svg.append("g")
                 .selectAll("rect")
-                .data(function (d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+                .data((year) => { 
+                  let now = moment();
+                  let isPastYear = now.year() > year;
+                  return d3.timeDays(new Date(year, 0, 1), new Date(year + (isPastYear ? 1 : 0), isPastYear ? 0 : now.month() + 1, 1));
+                })
                 .enter()
                   .append("rect")
                   .attr("width",  cellSize)
@@ -417,8 +421,8 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   // Update days with viewing data
   filteredData.forEach(datum => {
-    let sameDayMovies = filteredData.filter(d => moment(d.viewDate).isSame(datum.viewDate, "day"));
-    rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
+    let sameDayMovies = filteredData.filter(d => d.viewDate.isSame(datum.viewDate, "day"));
+    rect.filter(d => datum.viewDate.isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => datum.isPremium ? "url(#" + datum.service + "-stripe)" : "none")
         .on("click", () => {
@@ -469,7 +473,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   // Month Labels
   svg.selectAll(".legend")
-     .data(d => d3.timeMonths(new Date(d, 0, 1), new Date(d + 1, 0, 1)))
+     .data(year => d3.timeMonths(new Date(year, 0, 1), new Date(year + 1, 0, 1)))
      .enter()
      .append("g")
      .attr("class",        "legend")
@@ -486,7 +490,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
   // Double/Triple/etc. Feature Labels
   svg.append("g")
      .selectAll("rect")
-     .data(function (d) { return d3.timeDays(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+     .data(year => filteredData.filter(d => d.viewDate.year() == year).map(d => d.viewDate.toDate()))
      .enter()
        .append("text")
        .attr("x",      d => (d3.timeWeek.count(d3.timeYear(d), d) * cellSize) + (cellSize / 2))
@@ -497,8 +501,8 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
        .attr("fill",        "#eee8d5")
        .classed("double-feature-text", true)
        .text(d => {
-         let numMovies = filteredData.filter(datum => moment(datum.viewDate).isSame(d, "day")).length;
-         return numMovies > 1 ? numMovies : "";
+         let numMovies = filteredData.filter(datum => datum.viewDate.isSame(d, "day")).length;
+         return numMovies > 1 ? numMovies : null;
        });
 
 }
