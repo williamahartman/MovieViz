@@ -1,8 +1,8 @@
 /* General page style stuff */
 body {
   border-image: 
-      url(filmStripBorder.svg) 
-      33% / 
+      url(filmStripBorder.png) 
+      40 / 
       0px 40px 0px 40px / 
       40px 
       round;
