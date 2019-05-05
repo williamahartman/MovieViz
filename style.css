@@ -6,6 +6,7 @@ body {
       0px 40px 0px 40px / 
       40px 
       round;
+  border-style: solid;
 }
 
 svg {

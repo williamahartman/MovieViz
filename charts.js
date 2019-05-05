@@ -211,7 +211,11 @@ function drawRatingsGraph(data, id, width, tooltip) {
      .attr("x", d => x(d.rating))
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
-     .on("click", () => tooltipClicked = true)
+     .on("click", d => {
+       tooltipClicked = false; 
+       updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+       tooltipClicked = true;
+     })
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
@@ -272,7 +276,11 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
      .attr("x", d => x(d.viewDate.day()))
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
-     .on("click", () => tooltipClicked = true)
+     .on("click", d => {
+        tooltipClicked = false; 
+        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+        tooltipClicked = true;
+      })
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
@@ -360,7 +368,11 @@ function drawShowTimeGraph(data, id, width, tooltip) {
       .attr("x", d => x(d.x0))
       .attr("width", d => x(d.x1) - x(d.x0) - 1)
       .attr("height", () => y(1) - 0.5)
-      .on("click", () => tooltipClicked = true)
+      .on("click", d => {
+        tooltipClicked = false; 
+        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+        tooltipClicked = true;
+      })
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
@@ -409,10 +421,14 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
     rect.filter(d => moment(datum.viewDate).isSame(d, "day"))
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => datum.isPremium ? "url(#" + datum.service + "-stripe)" : "none")
-        .on("click", () => tooltipClicked = true)
+        .on("click", () => {
+          tooltipClicked = false; 
+          updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
+          tooltipClicked = true;
+        })
         .on("mouseout",  () => hideTooltip(tooltip))
-        .on("mousemove", d => updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY))
-        .on("mouseover", d => {
+        .on("mousemove", () => updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY))
+        .on("mouseover", () => {
           updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
           showTooltip(tooltip);
         });
@@ -562,7 +578,11 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
       .attr("width",   d => { 
         return d.dateDiff == 0 ? 4 : Math.abs(x(d.dateDiff) - x(0)); 
       })
-      .on("click", () => tooltipClicked = true)
+      .on("click", d => {
+        tooltipClicked = false; 
+        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+        tooltipClicked = true;
+      })
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
@@ -635,7 +655,11 @@ function drawTheaterGraph(data, id, width, tooltip) {
      .attr("y", d => y(d.theater))
      .attr("height", y.bandwidth())
      .attr("width", () => x(1) - 0.5)
-     .on("click", () => tooltipClicked = true)
+     .on("click", d => {
+      tooltipClicked = false; 
+      updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+      tooltipClicked = true;
+    })
      .on("mouseout",  () => hideTooltip(tooltip))
      .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
      .on("mouseover", d => {
@@ -740,7 +764,11 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
       .attr("width",   d => x(d.price) - 0.5)
-      .on("click", () => tooltipClicked = true)
+      .on("click", d => {
+        tooltipClicked = false; 
+        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
+        tooltipClicked = true;
+      })
       .on("mouseout",  () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
@@ -835,8 +863,8 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
   let movieTooltipHtml = "";
   movieTooltipHtml +=
   "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
-    "style=\"width:20px;height:20px;font-size:13px;text-align:center;margin-left:auto\">" +
-    "🗙" +
+    "style=\"width:20px;height:20px;line-height:20px;font-size:25px;text-align:center;vertical-align:middle;margin-left:auto\">" +
+    "×" +
   "</div>";
 
   movies.forEach( d => {
