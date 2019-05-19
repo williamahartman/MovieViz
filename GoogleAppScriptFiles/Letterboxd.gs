@@ -20,6 +20,10 @@ function updateRatings() {
       var currentRow = i + 2;
       sheet.getRange("P" + currentRow).setValue(rating.rating);
     }
+    if(rating && rating.review) {
+      var currentRow = i + 2;
+      sheet.getRange("Q" + currentRow).setValue("https://boxd.it/" + rating.review);
+    }
     rating = undefined;
   }
 }
@@ -55,10 +59,21 @@ function getRatings() {
   //Filter it down to the just the relevant information
   var ratings = []
   letterboxdData.forEach(function(i) {
-    ratings.push({
-      imdbId: i.links[2].id,
-      rating: i.relationships[0].relationship.rating
+    var imdbId;
+    i.links.forEach(function(j) {
+      if(j.type == "imdb") {
+        imdbId = j.id;
+        return;
+      }
     });
+    
+    if(imdbId != null) {
+      ratings.push({
+        imdbId: imdbId,
+        rating: i.relationships[0].relationship.rating,
+        review: i.relationships[0].relationship.reviews[0]
+      });
+    }
   });
   return ratings;
 }

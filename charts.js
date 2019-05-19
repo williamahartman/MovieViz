@@ -889,6 +889,7 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
 
     let imdbUrl = "http://imdb.com/title/" + d.imdbId;
     let letterboxdUrl = "https://letterboxd.com/imdb/" + d.imdbId;
+    // let reviewElement = d.reviewURL === "" ? "" : "<a class=\"clickable-on-tooltip\" href=\"" + d.reviewUrl + "\"> REVIEW </a>"
 
     movieTooltipHtml +=
       "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
@@ -900,7 +901,9 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
         "<span style=\"font-weight:900;text-align:center;margin-bottom:15px;\">" +
           "<a class=\"clickable-on-tooltip\" href=\"" + imdbUrl + "\" target=\"_blank\">IMDB</a>" +
           " " + 
-          "<a class=\"clickable-on-tooltip\" href=\"" + letterboxdUrl + "\" target=\"_blank\">LETTERBOXD</a><br>" +
+          "<a class=\"clickable-on-tooltip\" href=\"" + letterboxdUrl + "\" target=\"_blank\">LETTERBOXD</a>" +
+          " " +
+          (d.reviewUrl === "" ? "" : "<a class=\"clickable-on-tooltip\" href=\"" + d.reviewUrl + "\" target=\"_blank\">REVIEW</a><br>") + 
         "</span>" +
         
         "<div style=\"display:flex\";>" +
