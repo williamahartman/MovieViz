@@ -26,7 +26,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
     d.firstRun = d.firstRun === "Yes";
     d.isPremium = d.format !== "DCP" && d.format !== "35mm";
     d.serviceName = d.service;
-    d.service = "service-" + d.service.toLowerCase().replace(" ", "-")
+    d.service = "service-" + d.service.toLowerCase().replace(/\s/g, "-")
     d.price = +d.price;
     d.fees = +d.fees;
     d.rating = +d.rating;
