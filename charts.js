@@ -35,7 +35,7 @@ function drawGraphs(spreadsheetContents, tabletop) {
   });
   membershipData = membershipData.map(s => {
     s.serviceNameSimple = s.service;
-    s.service = "service-" + s.serviceNameSimple.toLowerCase().replace(" ", "-");
+    s.service = "service-" + s.serviceNameSimple.toLowerCase().replace(/\s/g, "-");
     s.legendText = s.legendText;
     s.showInLegend = s.showInLegend === "TRUE";
     s.showProfitGraph = s.showProfitGraph === "TRUE";
