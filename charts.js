@@ -104,6 +104,8 @@ function drawGraphs(spreadsheetContents) {
 
   //get the data we need
   var data = spreadsheetContents.movies;
+  var events = spreadsheetContents.events;
+  var spans = spreadsheetContents.spans;
   var membershipData = spreadsheetContents.memberships;
 
   //Generate the hatched patterned fills for each service
@@ -119,7 +121,7 @@ function drawGraphs(spreadsheetContents) {
   //Draw Charts
   drawTextStats(data, membershipData, firstYear, "#text-stats");
   drawRatingsGraph(data, "#ratings-graph", 435, tooltipDiv);
-  drawCalendarChart(data, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
+  drawCalendarChart(data, events, spans, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDayOfWeekGraph(data, "#day-of-week-graph", 385, tooltipDiv);
   drawShowTimeGraph(data, "#show-time-graph", 885, tooltipDiv);
   drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
@@ -430,7 +432,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
 }
 
 //Draw a calendar chart with movies on it.
-function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip) {
+function drawCalendarChart(data, events, spans, id, yearRange, width, height, cellSize, tooltip) {
   const countDay = d => d.getDay(),
         formatDay = d => "SMTWRFS"[d.getDay()],
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -439,7 +441,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
 
   //SVG for the chart
   const svg = d3.select(id)
-              .attr("class",  "calendar-chart")
+              .attr("class", "calendar-chart")
               .selectAll("svg")
               .data(yearRange)
               .enter()
@@ -461,7 +463,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
                   .append("rect")
                   .attr("width",  cellSize)
                   .attr("height", cellSize)
-                  .attr("fill", d => moment().isSameOrAfter(d, "month") ? "#073642" : "none")
+                  .attr("fill",   d => moment().isSameOrAfter(d, "month") ? "#073642" : "none")
                   .attr("stroke", d => moment().isSameOrAfter(d, "month") ? "#002b36" : "none")
                   .attr("x",      d => d3.timeWeek.count(d3.timeYear(d), d) * cellSize)
                   .attr("y",      d => d.getDay() * cellSize)
@@ -553,6 +555,43 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
          return numMovies > 1 ? numMovies : null;
        });
 
+  // Update days with event info
+  var symbolGenerator = d3.symbol()
+    .type(d3.symbolTriangle)
+    .size(30);
+  var eventPath = symbolGenerator();
+
+  svg.append("g")
+     .selectAll("rect")
+     .data(year => events.filter(d => d.date.year() == year).map(d => d.date.toDate()))
+     .enter()
+       .append("path")
+       .attr("d", eventPath)
+       .attr("fill", d => {
+         var event = events.find(element => element.date.isSame(d, "day"));
+         return event.color;
+       })
+       .attr('transform', function(d) {
+          let x = (d3.timeWeek.count(d3.timeYear(d), d) * cellSize) + (cellSize / 2);
+          let y = (d.getDay() * cellSize) + (cellSize / 2);
+          return 'translate(' + x + "," + y + ')';
+       })
+       .on("click", d => {
+         var event = events.find(element => element.date.isSame(d, "day"));
+         tooltipClicked = false;
+         updateTooltipForEvent(tooltip, event, d3.event.pageX, d3.event.pageY);
+         tooltipClicked = true;
+       })
+       .on("mouseout",  () => hideTooltip(tooltip))
+       .on("mousemove", d => {
+         var event = events.find(element => element.date.isSame(d, "day"));
+         updateTooltipForEvent(tooltip, event, d3.event.pageX, d3.event.pageY)
+       })
+       .on("mouseover", d => {
+         var event = events.find(element => element.date.isSame(d, "day"));
+         updateTooltipForEvent(tooltip, event, d3.event.pageX, d3.event.pageY);
+         showTooltip(tooltip);
+       });
 }
 
 //Draw a chart of movie date distances
@@ -856,7 +895,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
  //      TOOLTIP/UTILITY FUNCTIONS     //
 ////////////////////////////////////////
 
-function genPatternedFillsAndStyles(membershipData) {
+function genPatternedFillsAndStyles(membershipData, eventData) {
   var sheet = window.document.styleSheets[1];
   membershipData.forEach(s => {
     var colorRule = "." + s.service + " {" +
@@ -864,7 +903,7 @@ function genPatternedFillsAndStyles(membershipData) {
                       "color: " + s.color + ";" +
                     "}"
     var hatchRule = "." + s.service + "-hatch {" +
-                      "stroke: "  + s.color + ";" +
+                      "stroke: " + s.color + ";" +
                     "}"
 
     sheet.insertRule(colorRule, sheet.cssRules.length);
@@ -975,6 +1014,29 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
   });
 
   updateTooltip(tooltip, xPos, yPos, movieTooltipHtml);
+}
+
+function updateTooltipForEvent(tooltip, event, xPos, yPos) {
+  let eventTooltipHtml = "";
+  eventTooltipHtml +=
+  "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
+    "style=\"width:20px;height:20px;line-height:20px;font-size:25px;text-align:center;vertical-align:middle;margin-left:auto\">" +
+    "×" +
+  "</div>";
+
+  eventTooltipHtml +=
+    "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
+      "<span style=\"font-size:1.5em;text-align:center\">" +
+        event.date.format("dddd, MMMM Do YYYY") +
+      "</span>" +
+      "<div style=\"display:flex\";>" +
+        "<div style=\"margin: auto;font-size: 14px;padding-top: 20px;\">" +
+          event.description +
+        "</div>" +
+      "</div>" +
+    "</div>";
+
+  updateTooltip(tooltip, xPos, yPos, eventTooltipHtml);
 }
 
 function numToStars(rating) {
