@@ -1,25 +1,55 @@
 //Load data from spreadsheet and draw graphs
-const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
-Tabletop.init({ key: public_spreadsheet_url,
-                callback: drawGraphs,
-                wanted: ["Movies", "Memberships"]});
+// const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
+// Tabletop.init({ key: public_spreadsheet_url,
+//                 callback: drawGraphs,
+//                 wanted: ["Movies", "Memberships"]});
+
+const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTQS7hD2A-1yni8NVmyHrVaIS9gI97VHRkIIDZLv8a1e1Fy_DsoX-En6fTEabtIYI68pnnUqeeKxV_P/pub?output=csv";
+const main_sheet_gid = "2039433245";
+const memberships_sheet_gid = "42276888";
+const events_sheet_gid = "1137776008";
+const spans_sheet_gid = "504803073";
 
 var tooltipClicked = false;
-            
-function drawGraphs(spreadsheetContents, tabletop) {
-  // Define the div for the tooltip
-  const tooltipDiv = d3.select("body")
-                       .append("div")
-                       .attr("class", "tooltip")
-                       .style("opacity", 0);
 
-  //get the data we need
-  var data = spreadsheetContents["Movies"].elements;
-  var membershipData = spreadsheetContents["Memberships"].elements;
+const parseSheet = gid => new Promise(resolve => {
+  Papa.parse(public_spreadsheet_url + "&gid=" + gid, {
+    download: true,
+    header: true,
+    complete: function(membershipResults) {
+      resolve(membershipResults);
+    }
+  });
+});
 
-  //Clean up data
-  data = data.map(d => {
-    d.releaseDate = moment(d.releaseDate, "MM/DD/YYYY")
+function init() {
+  var sheetContents = {};
+  parseSheet(spans_sheet_gid)
+  .then(function(result) {
+    sheetContents.spans = result.data;
+    return parseSheet(events_sheet_gid)
+  })
+  .then(function(result) {
+    sheetContents.events = result.data;
+    return parseSheet(memberships_sheet_gid)
+  })
+  .then(function(result) {
+    sheetContents.memberships = result.data;
+    return parseSheet(main_sheet_gid)
+  })
+  .then(function(result) {
+    sheetContents.movies = result.data;
+
+    sanitizeData(sheetContents);
+    console.log(sheetContents);
+    drawGraphs(sheetContents);
+  });
+}
+init();
+
+function sanitizeData(sheetContents) {
+  sheetContents.movies = sheetContents.movies.map(d => {
+    d.releaseDate = moment(d.releaseDate, "MM/DD/YYYY");
     d.dateDiff = moment(d.viewDate, "MM/DD/YYYY").diff(d.releaseDate, "days");
     d.viewDate = moment(d.viewDate + " " + d.time, "MM/DD/YYYY h:mm:ss a");
     d.isTimeSet = d.time !== "";
@@ -33,9 +63,10 @@ function drawGraphs(spreadsheetContents, tabletop) {
     d.runTime = +d.runTime;
     return d;
   });
-  membershipData = membershipData.map(s => {
+
+  sheetContents.memberships = sheetContents.memberships.map(s => {
     s.serviceNameSimple = s.service;
-    s.service = "service-" + s.serviceNameSimple.toLowerCase().replace(/\s/g, "-");
+    s.service = "service-" + s.service.toLowerCase().replace(/\s/g, "-");
     s.legendText = s.legendText;
     s.showInLegend = s.showInLegend === "TRUE";
     s.showProfitGraph = s.showProfitGraph === "TRUE";
@@ -55,8 +86,31 @@ function drawGraphs(spreadsheetContents, tabletop) {
     s.movieFees = +s.movieFees;
     return s;
   });
-  console.log(data);
-  console.log(membershipData);
+
+  sheetContents.events = sheetContents.events.map(d => {
+    d.date = moment(d.date, "MM/DD/YYYY");
+    return d;
+  });
+
+  sheetContents.spans = sheetContents.spans.map(d => {
+    d.startDate = moment(d.startDate, "MM/DD/YYYY");
+    d.endDate = moment(d.endDate, "MM/DD/YYYY");
+    return d;
+  });
+
+  return sheetContents;
+}
+
+function drawGraphs(spreadsheetContents) {
+  // Define the div for the tooltip
+  const tooltipDiv = d3.select("body")
+                       .append("div")
+                       .attr("class", "tooltip")
+                       .style("opacity", 0);
+
+  //get the data we need
+  var data = spreadsheetContents.movies;
+  var membershipData = spreadsheetContents.memberships;
 
   //Generate the hatched patterned fills for each service
   genPatternedFillsAndStyles(membershipData);
@@ -84,7 +138,7 @@ function drawTextStats(data, membershipData, startYear, id) {
   var statsTable =  "<div style=\"display:flex;flex-wrap:wrap;justify-content: space-evenly;align-items: flex-start;\">";
   membershipData.forEach(m => {
     const numFromService = data.filter(d => d.service === m.service).length;
-    statsTable += 
+    statsTable +=
       "<div style=\"width:265px;flex-grow:1;\">" +
         "<table>" +
           "<tbody>" +
@@ -100,19 +154,19 @@ function drawTextStats(data, membershipData, startYear, id) {
 
   const numMoviesTotal = data.length;
   const numMoviesThisYear = data.filter(d => d.viewDate.year() == moment().year()).length;
-  const numMinutesInMovies = data.reduce((acc, n) => acc + n.runTime, 0); 
+  const numMinutesInMovies = data.reduce((acc, n) => acc + n.runTime, 0);
   d3.select(id)
     .append("div")
     .html(
-      "<table width=100%>" + 
-        "<tr>" + 
+      "<table width=100%>" +
+        "<tr>" +
           "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesThisYear + "</td>" +
           "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesThisYear == 1 ? "movie" : "movies") + " in theaters this year (so far...)</td>" +
           "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesTotal + "</td>" +
           "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
-        "</tr>" + 
+        "</tr>" +
       "</table>" +
-      "<div style=\"min-width=420px;margin-bottom:30px;text-align:center;\">" + 
+      "<div style=\"min-width=420px;margin-bottom:30px;text-align:center;\">" +
         "<span style=\"font-size:20px\">For a total of </span>" +
         "<span style=\"color:#fdf6e3;font-size:24px;\">" + minsToBetterUnits(numMinutesInMovies) + "</span>" +
         "<span style=\"font-size:20px\"> in movie theaters</span>" +
@@ -126,7 +180,7 @@ function drawLegends(membershipData, id) {
   var legend =  "<div style=\"display:flex;flex-wrap:wrap;max-width:605px;margin:auto;margin-bottom:15px;\">";
   membershipData.filter(m => m.showInLegend)
                 .forEach(m => {
-                  legend += 
+                  legend +=
                     "<div style=\"width:33%;margin-bottom:-5px;\">" +
                       "<table>" +
                         "<tbody>" +
@@ -161,7 +215,7 @@ function drawRatingsGraph(data, id, width, tooltip) {
   });
 
   filteredData.sort((a, b) => {
-    const aToNum = (10 * serviceList.findIndex(d => d === a.service) - a.isPremium); 
+    const aToNum = (10 * serviceList.findIndex(d => d === a.service) - a.isPremium);
     const bToNum = (10 * serviceList.findIndex(d => d === b.service) - b.isPremium);
     return aToNum - bToNum;
   });
@@ -191,7 +245,7 @@ function drawRatingsGraph(data, id, width, tooltip) {
   const g = svg.attr("width",  width)
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
-  
+
   //X-axis
   g.append("g")
    .attr("class", "xaxis")
@@ -212,7 +266,7 @@ function drawRatingsGraph(data, id, width, tooltip) {
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
      .on("click", d => {
-       tooltipClicked = false; 
+       tooltipClicked = false;
        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
        tooltipClicked = true;
      })
@@ -255,7 +309,7 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
   const g = svg.attr("width",  width)
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g");
-  
+
   //X-axis
   g.append("g")
    .attr("class", "xaxis")
@@ -277,7 +331,7 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
      .attr("width", x.bandwidth())
      .attr("height", () => y(1) - 0.5)
      .on("click", d => {
-        tooltipClicked = false; 
+        tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
         tooltipClicked = true;
       })
@@ -300,7 +354,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
                                   return d;
                                 });
   filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix());
-                                  
+
   var hist = d3.histogram()
                .value((d) => d.viewTime)
                .domain([0, 60 * 24])
@@ -332,7 +386,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  
+
   //X-axis
   g.append("g")
    .attr("class", "xaxis")
@@ -369,11 +423,11 @@ function drawShowTimeGraph(data, id, width, tooltip) {
       .attr("width", d => x(d.x1) - x(d.x0) - 1)
       .attr("height", () => y(1) - 0.5)
       .on("click", d => {
-        tooltipClicked = false; 
+        tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
         tooltipClicked = true;
       })
-      .on("mouseout",  () => hideTooltip(tooltip))
+      .on("mouseout", () => hideTooltip(tooltip))
       .on("mousemove", d => updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY))
       .on("mouseover", d => {
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
@@ -404,7 +458,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
   // Days
   const rect = svg.append("g")
                 .selectAll("rect")
-                .data((year) => { 
+                .data((year) => {
                   let now = moment();
                   let isPastYear = now.year() > year;
                   return d3.timeDays(new Date(year, 0, 1), new Date(year + (isPastYear ? 1 : 0), isPastYear ? 0 : now.month() + 1, 1));
@@ -426,7 +480,7 @@ function drawCalendarChart(data, id, yearRange, width, height, cellSize, tooltip
         .classed(datum.service, !datum.isPremium)
         .attr("fill", () => datum.isPremium ? "url(#" + datum.service + "-stripe)" : "none")
         .on("click", () => {
-          tooltipClicked = false; 
+          tooltipClicked = false;
           updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
           tooltipClicked = true;
         })
@@ -526,7 +580,7 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
   margin = {top: 20, right: 20, bottom: 30, left: 150},
   chartWidth = width - margin.left - margin.right,
   height = calculatedHeight + margin.top + margin.bottom;
-    
+
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
   const y = d3.scaleBand().range([calculatedHeight, 0]);
@@ -558,7 +612,7 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
   g.append("g")
       .attr("class", "yaxis")
       .call(d3.axisLeft(y));
-  
+
   //Date diff bars
   const moviesAdded = []
   g.selectAll(".bar")
@@ -579,11 +633,11 @@ function drawDateDiffBarGraph(data, id, width, tooltip) {
       .attr("x",  d => d.dateDiff > 0 ? x(0) : d.dateDiff === 0 ? x(0) - 2 : x(d.dateDiff))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.movieGraph))
-      .attr("width",   d => { 
-        return d.dateDiff == 0 ? 4 : Math.abs(x(d.dateDiff) - x(0)); 
+      .attr("width",   d => {
+        return d.dateDiff == 0 ? 4 : Math.abs(x(d.dateDiff) - x(0));
       })
       .on("click", d => {
-        tooltipClicked = false; 
+        tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
         tooltipClicked = true;
       })
@@ -600,7 +654,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
   //Data processing
   const filteredData = data.filter(d => d.theater !== "")
                            .filter(d => d.service !== "");
-  
+
   const theaterList = getTheaterList(filteredData)
                         .sort((a, b) => filteredData.filter(d => b === d.theater).length - filteredData.filter(d => a === d.theater).length);
 
@@ -633,7 +687,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
                .attr("viewBox", "0 0 " + width + " " + height)
                .append("g")
                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  
+
   //X-axis
   g.append("g")
    .attr("class", "xaxis")
@@ -660,7 +714,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
      .attr("height", y.bandwidth())
      .attr("width", () => x(1) - 0.5)
      .on("click", d => {
-      tooltipClicked = false; 
+      tooltipClicked = false;
       updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
       tooltipClicked = true;
     })
@@ -744,7 +798,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
         .ticks(1)
         .tickValues([targetAmount])
         .tickFormat(d => d3.format("$,.2f")(d) + " on " + serviceName + " subscription" + (includeFees ? " (including fees)" : "")));
-  
+
   //Hatched background
   g.selectAll(".bar")
       .data(profitData)
@@ -769,7 +823,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("y",       d => y(d.service))
       .attr("width",   d => x(d.price) - 0.5)
       .on("click", d => {
-        tooltipClicked = false; 
+        tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
         tooltipClicked = true;
       })
@@ -826,7 +880,7 @@ function genPatternedFillsAndStyles(membershipData) {
   //Add patterned fills for each service
   membershipData.map(s => s.service)
                 .forEach(s => {
-                  const fill = 
+                  const fill =
                     "<defs>" +
                       "<pattern id=\""+ s + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
                         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
@@ -893,22 +947,22 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
 
     movieTooltipHtml +=
       "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
-        "<span style=\"font-size:1.5em;text-align:center\">" + 
-          d.movie + 
+        "<span style=\"font-size:1.5em;text-align:center\">" +
+          d.movie +
           "<br>" +
           numToStars(d.rating) +
         "</span>" +
         "<span style=\"font-weight:900;text-align:center;margin-bottom:15px;\">" +
           "<a class=\"clickable-on-tooltip\" href=\"" + imdbUrl + "\" target=\"_blank\">IMDB</a>" +
-          " " + 
+          " " +
           "<a class=\"clickable-on-tooltip\" href=\"" + letterboxdUrl + "\" target=\"_blank\">LETTERBOXD</a>" +
           " " +
-          (d.reviewUrl === "" ? "" : "<a class=\"clickable-on-tooltip\" href=\"" + d.reviewUrl + "\" target=\"_blank\">REVIEW</a><br>") + 
+          (d.reviewUrl === "" ? "" : "<a class=\"clickable-on-tooltip\" href=\"" + d.reviewUrl + "\" target=\"_blank\">REVIEW</a><br>") +
         "</span>" +
-        
+
         "<div style=\"display:flex\";>" +
           "<div>" +
-            "<img src=\"" + (d.posterUrl === "" ? "placeholderposter.png" : d.posterUrl) + "\" style=\"width:100px;margin-right:10px;\">" +
+            "<img src=\"" + (d.posterUrl === "" ? "resources/placeholderposter.png" : d.posterUrl) + "\" style=\"width:100px;margin-right:10px;\">" +
           "</div>" +
           "<div>" +
             "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + (d.releaseDate.isValid() ? moment(d.releaseDate).format("M/D/YYYY") : "???") + "<br>" +
@@ -948,7 +1002,7 @@ function minsToBetterUnits(numMins) {
   var numCompleteDays  = Math.floor(numMins / 60 / 24);
   var numLeftoverHours = Math.floor(numMins / 60) - (numCompleteDays * 24);
   var numLeftoverMinutes = Math.floor(numMins) - (numCompleteDays * 24 * 60) - (numLeftoverHours * 60);
-  
+
   var stringDescription = "";
 
   if(numCompleteDays > 0) {
@@ -977,7 +1031,7 @@ function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
     const tooltipHeight =  tooltip.node().clientHeight;
     const documentWidth =  document.documentElement.scrollWidth;
     const documentHeight = window.scrollY + window.innerHeight;
-  
+
     var xPosCorrected = xPos;
     if(xPos + tooltipWidth > documentWidth) {
       xPosCorrected = documentWidth - tooltipWidth
@@ -986,7 +1040,7 @@ function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
     if(yPos + tooltipHeight > documentHeight) {
       yPosCorrected = documentHeight - tooltipHeight;
     }
-  
+
     tooltip.style("left", xPosCorrected + "px")
            .style("top",  yPosCorrected + "px");
   }
@@ -1013,9 +1067,9 @@ function closeTooltip(tooltip) {
 
 function pathMonth(t0, cellSize) {
   const t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
-        d0 = t0.getDay(), 
+        d0 = t0.getDay(),
         w0 = d3.timeWeek.count(d3.timeYear(t0), t0),
-        d1 = t1.getDay(), 
+        d1 = t1.getDay(),
         w1 = d3.timeWeek.count(d3.timeYear(t1), t1);
   return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize
     + "H" + w0 * cellSize + "V" + 7 * cellSize

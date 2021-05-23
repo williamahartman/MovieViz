@@ -1,10 +1,10 @@
 /* General page style stuff */
 body {
-  border-image: 
-      url(filmStripBorder.png) 
-      40 / 
-      0px 40px 0px 40px / 
-      40px 
+  border-image:
+      url(../resources/filmStripBorder.png)
+      40 /
+      0px 40px 0px 40px /
+      40px
       round;
   border-style: solid;
 }
@@ -15,7 +15,7 @@ svg {
 }
 
 .section {
-  margin-top: 50px; 
+  margin-top: 50px;
   margin-bottom: 75px;
 }
 
@@ -26,7 +26,7 @@ svg {
 }
 
 .section-small {
-  margin-top: 50px; 
+  margin-top: 50px;
   margin-bottom: 50px;
   overflow: auto;
 }

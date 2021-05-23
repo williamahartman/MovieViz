@@ -3,12 +3,12 @@
 
 <head>
   <link rel="preconnect" href="https://spreadsheets.google.com">
-  <link rel="stylesheet" type="text/css" href="solarized-dark.css" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <script src="https://d3js.org/d3.v5.js"></script>
-  <script src="https://d3js.org/d3-selection-multi.v0.4.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment.min.js"></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.2/tabletop.min.js'></script>
+  <link rel="stylesheet" type="text/css" href="styles/solarized-dark.css" />
+  <link rel="stylesheet" type="text/css" href="styles/style.css" />
+  <script src="libs/d3.v5.min.js"></script>
+  <script src="libs/d3-selection-multi.v0.4.min.js"></script>
+  <script src="libs/moment.min.js"></script>
+  <script src='libs/papaparse.min.js'></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
@@ -17,30 +17,29 @@
   <div class="section-small">
     <h1>Movie Theater Data</h1>
     <p style="font-size:0.85em">
-        I started going to the movies a lot when I signed up for Moviepass in late 2017. Now, with the service falling apart, 
+        I started going to the movies a lot when I signed up for Moviepass in late 2017. Now, with the service falling apart,
         I thought it would be fun to take a look at the data on what I saw.
         <br><br>
-        The charts were made with <a href="https://d3js.org/">D3.</a> All the data is pulled out of a 
-        <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a> 
-        on page load with <a href="https://github.com/jsoma/tabletop">Tabletop.js.</a> Some of the data in the spreadsheet comes from 
-        <a href="http://www.omdbapi.com/">OMDb.</a> The ratings are pulled from <a href=https://letterboxd.com/Nocut12> my Letterboxd account.</a> 
+        The charts were made with <a href="https://d3js.org/">D3.</a> All the data is pulled out of a
+        <a href="https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing">Google Sheet</a>
+        on page load with <a href="https://github.com/jsoma/tabletop">Tabletop.js.</a> Some of the data in the spreadsheet comes from
+        <a href="http://www.omdbapi.com/">OMDb.</a> The ratings are pulled from <a href=https://letterboxd.com/Nocut12> my Letterboxd account.</a>
         I referenced <a href="https://bl.ocks.org/mbostock/4063318">these</a> <a href="https://bl.ocks.org/micahstubbs/89c6bd879d64aa511372064c6cf85711">projects</a>
-        for the calendar chart and <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the 
-        stacked bar chart. I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color 
+        for the calendar chart and <a href="https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee">this project</a> for the
+        stacked bar chart. I used <a href="http://thomasf.github.io/solarized-css/">this stylesheet</a> for the Solarized Dark color
         scheme. The hatched fill was adapted from <a href="https://github.com/iros/patternfills"> this project.</a>
         <br><br>
         <ul style="font-size:0.85em">
-          <li>"Non-premium" showings are considered to be 2D DCPs or on 35mm. Premium showings are anything that usually costs more money than regular — this includes 
+          <li>"Non-premium" showings are considered to be 2D DCPs or on 35mm. Premium showings are anything that usually costs more money than regular — this includes
             just about anything else (3D, chain-specific premium brands, Dolby Atmos, any variety of IMAX, 70mm, etc).</li>
           <li>This chart doesn't include things at movie theaters that aren't movies. If it doesn't have an IMDb page, it isn't included.</li>
           <li>Prices paid don't factor in concessions, movie tickets I bought for other people, or any addon-style donations to non-profit theaters.</li>
           <li>If there are multiple kinds of fees (online booking fees, convenience fees, Sinemia fees) on a single ticket, they are all added together.</li>
-          <li>"Gifts" can be an invite to a free screening, it doesn't have to be someone else paying for the tickets. "Free Tickets" are tickets that were 
+          <li>"Gifts" can be an invite to a free screening, it doesn't have to be someone else paying for the tickets. "Free Tickets" are tickets that were
             offered as some kind of promotion or make-good.</li>
           <li>For double features, the top-billed movie is listed at full price under whatever service was used to buy the ticket. The second-billed movie is listed
             with a price of $0 under the "Double Feature" service.</li>
         </ul>
-        
     </p>
   </div>
   <div id="text-stats" class="section-small">
@@ -85,7 +84,7 @@
       <svg id="day-of-week-graph"></svg>
     </div>
     <p class="chart-caption">
-      Premium showings have hatched bars. Midnight showings are listed on the "previous" day </br> 
+      Premium showings have hatched bars. Midnight showings are listed on the "previous" day </br>
       (or we could just pretend they happened at 11:59 PM)
     </p>
   </div>
@@ -96,7 +95,7 @@
       <svg id="date-diff-graph"></svg>
     </div>
     <p class="chart-caption">
-      The x-axis shows the number of days between the view date and the date of widest release. Only first run movies are shown. 
+      The x-axis shows the number of days between the view date and the date of widest release. Only first run movies are shown.
       <br>
       Premium showings have hatched bars. Bars are layered for movies that were viewed more than once.
     </p>
