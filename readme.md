@@ -2,13 +2,17 @@
 
 I've been using MoviePass for a little while, so I've seen a lot of movies in that past year. With the service falling apart, I thought it would be fun to take a look at all the data on all the movies I saw in theaters in 2017 and 2018.
 
-The data is visualized with [D3](https://d3js.org/). All the data is pulled directly from a [Google Sheet](https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing) with [Tabletop.js](https://github.com/jsoma/tabletop) on page load. Some of the data in the sheet comes from [OMDb](http://www.omdbapi.com/), but most of it is stuff I entered myself with a Google Form. The ratings are pulled in from my Letterboxd account. With this setup, anytime I add a new movie to the spreadsheet, the viz updates automatically.
+The data is visualized with [D3](https://d3js.org/). All the data is pulled directly from a [Google Sheet](https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing) with [Papa Parse](https://www.papaparse.com/) on page load. Some of the data in the sheet comes from [OMDb](http://www.omdbapi.com/), but most of it is stuff I entered myself with a Google Form. The ratings are pulled in from my Letterboxd account. With this setup, anytime I add a new movie to the spreadsheet, the viz updates automatically.
 
 I referenced [these](https://bl.ocks.org/mbostock/4063318) [projects](https://bl.ocks.org/micahstubbs/89c6bd879d64aa511372064c6cf85711) for the calendar chart and [this project](https://bl.ocks.org/DimsumPanda/689368252f55179e12185e13c5ed1fee) for the stacked bar chart. I used [this stylesheet](http://thomasf.github.io/solarized-css/) for the Solarized Dark color scheme. SVG patterned fills were adapted from [this project.](https://github.com/iros/patternfills)
 
 ## Setting up the Spreadsheet
 
-The column names are used in the viz, so its probably simplest to start from a copy of [this spreadsheet](https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing).
+The column names are used in the viz, so its probably simplest to start from a copy of [this spreadsheet](https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing). You'll need to select "Publish to the web" to make the csv file available.
+
+In `charts.js` you need to add this information:
+- The public URL of the sheet. This is the one you'll see under the "Publish to the web" menu, not the one you edit from. It should have `2PACX` in it.
+- The `gid`s of the the four relevant worksheets ("Movies", "Memberships", "Events", and "Spans"). You can find these values by looking for the `gid=` in the URL when editing that worksheet in Google Drive.
 
 ### Setting up OMDb
 
@@ -20,7 +24,7 @@ For the script to work, you'll need to add an OMDb API key under the "Script pro
 
 ## Setting up Letterboxd
 
-Same as with OMDb, if you want to pull reviews from your Letterboxd account, you'll need to add the contents of the `Letterboxd.gs` file on a trigger. I have this one run nightly instead of when I submit the form. I tend to enter data while I'm waiting for the movie to start -- and I certainly wouldn't rate something before I saw it! 
+Same as with OMDb, if you want to pull reviews from your Letterboxd account, you'll need to add the contents of the `Letterboxd.gs` file on a trigger. I have this one run nightly instead of when I submit the form. I tend to enter data while I'm waiting for the movie to start -- and I certainly wouldn't rate something before I saw it!
 
 You'll need a Letterboxd API key and secret for this to work. They list an email address [over here](https://letterboxd.com/api-beta/), but they weren't super responsive for me. You might have to get a little creative to get the info you need...
 
