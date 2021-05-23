@@ -1,9 +1,3 @@
-//Load data from spreadsheet and draw graphs
-// const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1Ex4A6yFXT0QUCWTioNcop896I6CWirV6ZZ3-H6UPvig/edit?usp=sharing";
-// Tabletop.init({ key: public_spreadsheet_url,
-//                 callback: drawGraphs,
-//                 wanted: ["Movies", "Memberships"]});
-
 const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTQS7hD2A-1yni8NVmyHrVaIS9gI97VHRkIIDZLv8a1e1Fy_DsoX-En6fTEabtIYI68pnnUqeeKxV_P/pub?output=csv";
 const main_sheet_gid = "2039433245";
 const memberships_sheet_gid = "42276888";
@@ -962,7 +956,7 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
 
         "<div style=\"display:flex\";>" +
           "<div>" +
-            "<img src=\"" + (d.posterUrl === "" ? "resources/placeholderposter.png" : d.posterUrl) + "\" style=\"width:100px;margin-right:10px;\">" +
+            "<img src=\"" + d.posterUrl + "\" onerror=\"if (this.src != 'resources/placeholderposter.png') this.src = 'resources/placeholderposter.png';\" \" style=\"width:100px;margin-right:10px;\">" +
           "</div>" +
           "<div>" +
             "<span style=\"font-weight: 900;\">DATE RELEASED: </span>" + (d.releaseDate.isValid() ? moment(d.releaseDate).format("M/D/YYYY") : "???") + "<br>" +
