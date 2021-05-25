@@ -10,6 +10,7 @@ const parseSheet = gid => new Promise(resolve => {
   Papa.parse(public_spreadsheet_url + "&gid=" + gid, {
     download: true,
     header: true,
+    worker: true,
     complete: function(membershipResults) {
       resolve(membershipResults);
     }
@@ -17,27 +18,22 @@ const parseSheet = gid => new Promise(resolve => {
 });
 
 function init() {
-  var sheetContents = {};
-  parseSheet(spans_sheet_gid)
-  .then(function(result) {
-    sheetContents.spans = result.data;
-    return parseSheet(events_sheet_gid)
-  })
-  .then(function(result) {
-    sheetContents.events = result.data;
-    return parseSheet(memberships_sheet_gid)
-  })
-  .then(function(result) {
-    sheetContents.memberships = result.data;
-    return parseSheet(main_sheet_gid)
-  })
-  .then(function(result) {
-    sheetContents.movies = result.data;
+  const spansPromise = parseSheet(spans_sheet_gid);
+  const eventsPromise = parseSheet(events_sheet_gid);
+  const membershipsPromise = parseSheet(memberships_sheet_gid);
+  const moviesPromise = parseSheet(main_sheet_gid);
 
+  Promise.all([spansPromise, eventsPromise, membershipsPromise, moviesPromise]).then(values => {
+    var sheetContents = {
+      spans:       values[0].data,
+      events:      values[1].data,
+      memberships: values[2].data,
+      movies:      values[3].data
+    };
     sanitizeData(sheetContents);
     console.log(sheetContents);
     drawGraphs(sheetContents);
-  });
+  })
 }
 init();
 
@@ -93,6 +89,33 @@ function sanitizeData(sheetContents) {
   });
 
   return sheetContents;
+}
+
+function getMoviesByDate(movies) {
+  let temp = {};
+  movies.forEach(movie => {
+    var formattedDate = movie.viewDate.format("YYYY-MM-DD");
+    if (formattedDate in temp) {
+      temp[formattedDate].push(movie);
+    } else {
+      temp[formattedDate] = [movie];
+    }
+  });
+  return temp;
+}
+
+function findMultiMovieDays(movies) {
+  var temp = getMoviesByDate(movies);
+  let result = [];
+  for (var i in temp) {
+    if (temp[i].length > 1) {
+      result.push({
+        date:  moment(i).toDate(),
+        count: temp[i].length,
+      })
+    }
+  }
+  return result;
 }
 
 function drawGraphs(spreadsheetContents) {
@@ -437,7 +460,10 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
         formatDay = d => "SMTWRFS"[d.getDay()],
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+  //Only entries with a date
   const filteredData = data.filter(d => d.viewDate.isValid());
+  const moviesByDate = getMoviesByDate(filteredData);
+  const multiMovieDays = findMultiMovieDays(filteredData);
 
   //SVG for the chart
   const svg = d3.select(id)
@@ -452,41 +478,56 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
                 .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
   // Days
-  const rect = svg.append("g")
-                .selectAll("rect")
-                .data((year) => {
-                  let now = moment();
-                  let isPastYear = now.year() > year;
-                  return d3.timeDays(new Date(year, 0, 1), new Date(year + (isPastYear ? 1 : 0), isPastYear ? 0 : now.month() + 1, 1));
-                })
-                .enter()
-                  .append("rect")
-                  .attr("width",  cellSize)
-                  .attr("height", cellSize)
-                  .attr("fill",   d => moment().isSameOrAfter(d, "month") ? "#073642" : "none")
-                  .attr("stroke", d => moment().isSameOrAfter(d, "month") ? "#002b36" : "none")
-                  .attr("x",      d => d3.timeWeek.count(d3.timeYear(d), d) * cellSize)
-                  .attr("y",      d => d.getDay() * cellSize)
-                  .datum(d3.timeFormat("%Y-%m-%d"))
-
-  // Update days with viewing data
-  filteredData.forEach(datum => {
-    let sameDayMovies = filteredData.filter(d => d.viewDate.isSame(datum.viewDate, "day"));
-    rect.filter(d => datum.viewDate.isSame(d, "day"))
-        .classed(datum.service, !datum.isPremium)
-        .attr("fill", () => datum.isPremium ? "url(#" + datum.service + "-stripe)" : "none")
-        .on("click", () => {
-          tooltipClicked = false;
-          updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
-          tooltipClicked = true;
-        })
-        .on("mouseout",  () => hideTooltip(tooltip))
-        .on("mousemove", () => updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY))
-        .on("mouseover", () => {
-          updateTooltipForMovie(tooltip, sameDayMovies, d3.event.pageX, d3.event.pageY);
-          showTooltip(tooltip);
-        });
-  });
+  svg.append("g")
+     .selectAll("rect")
+     .data((year) => {
+       let now = moment();
+       let isPastYear = now.year() > year;
+       let days = d3.timeDays(new Date(year, 0, 1), new Date(year + (isPastYear ? 1 : 0), isPastYear ? 0 : now.month() + 1, 1));
+       return days.map(day => {
+         let movieList = [];
+         let dayString = day.toISOString().substring(0, 10)
+         if (dayString in moviesByDate) {
+           movieList = moviesByDate[dayString]
+         }
+         return {
+           date: day,
+           movies: movieList
+         };
+       });
+     })
+     .enter()
+       .append("rect")
+       .attr("width",  cellSize)
+       .attr("height", cellSize)
+       .attr("stroke", d => moment().isSameOrAfter(d.date, "month") ? "#002b36" : "none")
+       .attr("x",      d => d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize)
+       .attr("y",      d => d.date.getDay() * cellSize)
+       .attr("class", d => {
+         if (d.movies.length > 0 && !d.movies[0].isPremium) {
+           return d.movies[0].service;
+         } else {
+           return null;
+         }
+       })
+       .attr("fill", d => {
+         if (d.movies.length > 0) {
+           return d.movies[0].isPremium ? "url(#" + d.movies[0].service + "-stripe)" : "none";
+         } else {
+           return moment().isSameOrAfter(d.date, "month") ? "#073642" : "none";
+         }
+       })
+       .on("click", d => {
+         tooltipClicked = false;
+         updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
+         tooltipClicked = true;
+       })
+       .on("mouseout", () => hideTooltip(tooltip))
+       .on("mousemove", d => updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY))
+       .on("mouseover", d => {
+         updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
+         showTooltip(tooltip);
+       });
 
   // Months
   svg.append("g")
@@ -540,24 +581,21 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
   // Double/Triple/etc. Feature Labels
   svg.append("g")
      .selectAll("rect")
-     .data(year => filteredData.filter(d => d.viewDate.year() == year).map(d => d.viewDate.toDate()))
+     .data(year => multiMovieDays.filter(d => d.date.getFullYear() == year))
      .enter()
        .append("text")
-       .attr("x",      d => (d3.timeWeek.count(d3.timeYear(d), d) * cellSize) + (cellSize / 2))
-       .attr("y",      d => (d.getDay() * cellSize) + (cellSize / 2))
+       .attr("x",      d => (d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize) + (cellSize / 2))
+       .attr("y",      d => (d.date.getDay() * cellSize) + (cellSize / 2))
        .attr("font-family", "sans-serif")
        .attr("font-size",   14)
        .attr("text-anchor", "middle")
        .attr("fill",        "#eee8d5")
        .classed("double-feature-text", true)
-       .text(d => {
-         let numMovies = filteredData.filter(datum => datum.viewDate.isSame(d, "day")).length;
-         return numMovies > 1 ? numMovies : null;
-       });
+       .text(d => d.count);
 
-  // Update days with event info
+  // Add event info over days
   var symbolGenerator = d3.symbol()
-    .type(d3.symbolTriangle)
+    .type(d3.symbolCircle)
     .size(30);
   var eventPath = symbolGenerator();
 
@@ -951,6 +989,11 @@ function getTheaterList(data) {
 }
 
 function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
+  if (movies.length == 0) {
+    hideTooltip(tooltip);
+    return;
+  }
+
   let movieTooltipHtml = "";
   movieTooltipHtml +=
   "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
