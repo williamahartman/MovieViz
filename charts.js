@@ -503,7 +503,7 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
        .attr("stroke", d => moment().isSameOrAfter(d.date, "month") ? "#002b36" : "none")
        .attr("x",      d => d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize)
        .attr("y",      d => d.date.getDay() * cellSize)
-       .attr("class", d => {
+       .attr("class",  d => {
          if (d.movies.length > 0 && !d.movies[0].isPremium) {
            return d.movies[0].service;
          } else {
@@ -518,15 +518,25 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
          }
        })
        .on("click", d => {
-         tooltipClicked = false;
-         updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
-         tooltipClicked = true;
+         if (d.movies.length > 0) {
+           tooltipClicked = false;
+           updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
+           tooltipClicked = true;
+         }
        })
-       .on("mouseout", () => hideTooltip(tooltip))
-       .on("mousemove", d => updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY))
+       .on("mouseout", d => {
+         if (d.movies.length > 0)
+           hideTooltip(tooltip)
+       })
+       .on("mousemove", d => {
+         if (d.movies.length > 0)
+           updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY)
+       })
        .on("mouseover", d => {
-         updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
-         showTooltip(tooltip);
+         if (d.movies.length > 0) {
+           updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
+           showTooltip(tooltip);
+         }
        });
 
   // Months
@@ -601,33 +611,34 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
 
   svg.append("g")
      .selectAll("rect")
-     .data(year => events.filter(d => d.date.year() == year).map(d => d.date.toDate()))
+     .data(year => {
+       return events.filter(d => d.date.year() == year)
+                    .map(d => {
+                      return {
+                        date: d.date.toDate(),
+                        color: d.color,
+                        description: d.description
+                      }
+                    })
+     })
      .enter()
        .append("path")
        .attr("d", eventPath)
-       .attr("fill", d => {
-         var event = events.find(element => element.date.isSame(d, "day"));
-         return event.color;
-       })
+       .attr("fill", d => d.color)
        .attr('transform', function(d) {
-          let x = (d3.timeWeek.count(d3.timeYear(d), d) * cellSize) + (cellSize / 2);
-          let y = (d.getDay() * cellSize) + (cellSize / 2);
+          let x = (d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize) + (cellSize / 2);
+          let y = (d.date.getDay() * cellSize) + (cellSize / 2);
           return 'translate(' + x + "," + y + ')';
        })
        .on("click", d => {
-         var event = events.find(element => element.date.isSame(d, "day"));
          tooltipClicked = false;
-         updateTooltipForEvent(tooltip, event, d3.event.pageX, d3.event.pageY);
+         updateTooltipForEvent(tooltip, d, d3.event.pageX, d3.event.pageY);
          tooltipClicked = true;
        })
        .on("mouseout",  () => hideTooltip(tooltip))
-       .on("mousemove", d => {
-         var event = events.find(element => element.date.isSame(d, "day"));
-         updateTooltipForEvent(tooltip, event, d3.event.pageX, d3.event.pageY)
-       })
+       .on("mousemove", d => updateTooltipForEvent(tooltip, d, d3.event.pageX, d3.event.pageY))
        .on("mouseover", d => {
-         var event = events.find(element => element.date.isSame(d, "day"));
-         updateTooltipForEvent(tooltip, event, d3.event.pageX, d3.event.pageY);
+         updateTooltipForEvent(tooltip, d, d3.event.pageX, d3.event.pageY);
          showTooltip(tooltip);
        });
 }
@@ -989,11 +1000,6 @@ function getTheaterList(data) {
 }
 
 function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
-  if (movies.length == 0) {
-    hideTooltip(tooltip);
-    return;
-  }
-
   let movieTooltipHtml = "";
   movieTooltipHtml +=
   "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
@@ -1070,7 +1076,7 @@ function updateTooltipForEvent(tooltip, event, xPos, yPos) {
   eventTooltipHtml +=
     "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
       "<span style=\"font-size:1.5em;text-align:center\">" +
-        event.date.format("dddd, MMMM Do YYYY") +
+        moment(event.date).format("dddd, MMMM Do YYYY") +
       "</span>" +
       "<div style=\"display:flex\";>" +
         "<div style=\"margin: auto;font-size: 14px;padding-top: 20px;\">" +
