@@ -126,30 +126,30 @@ function drawGraphs(spreadsheetContents) {
                        .style("opacity", 0);
 
   //get the data we need
-  var data = spreadsheetContents.movies;
+  var movies = spreadsheetContents.movies;
   var events = spreadsheetContents.events;
   var spans = spreadsheetContents.spans;
-  var membershipData = spreadsheetContents.memberships;
+  var memberships = spreadsheetContents.memberships;
 
   //Generate the hatched patterned fills for each service
-  genPatternedFillsAndStyles(membershipData);
+  genPatternedFillsAndStyles(memberships, spans);
 
   //Figure out year range
-  const firstYear = d3.min(data, d => moment(d.viewDate).year());
-  const lastYear =  d3.max(data, d => moment(d.viewDate).year());
+  const firstYear = d3.min(movies, d => moment(d.viewDate).year());
+  const lastYear =  d3.max(movies, d => moment(d.viewDate).year());
 
   //Draw Legends
-  drawLegends(membershipData, "#legend")
+  drawLegends(memberships, "#legend")
 
   //Draw Charts
-  drawTextStats(data, membershipData, firstYear, "#text-stats");
-  drawRatingsGraph(data, "#ratings-graph", 435, tooltipDiv);
-  drawCalendarChart(data, events, spans, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
-  drawDayOfWeekGraph(data, "#day-of-week-graph", 385, tooltipDiv);
-  drawShowTimeGraph(data, "#show-time-graph", 885, tooltipDiv);
-  drawDateDiffBarGraph(data, "#date-diff-graph", 885, tooltipDiv);
-  drawTheaterGraph(data, "#theater-graph", 885, tooltipDiv);
-  drawAllProfitGraphs(data, membershipData, "#profit-charts", tooltipDiv);
+  drawTextStats(movies, memberships, firstYear, "#text-stats");
+  drawRatingsGraph(movies, "#ratings-graph", 435, tooltipDiv);
+  drawCalendarChart(movies, events, spans, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
+  drawDayOfWeekGraph(movies, "#day-of-week-graph", 385, tooltipDiv);
+  drawShowTimeGraph(movies, "#show-time-graph", 885, tooltipDiv);
+  drawDateDiffBarGraph(movies, "#date-diff-graph", 885, tooltipDiv);
+  drawTheaterGraph(movies, "#theater-graph", 885, tooltipDiv);
+  drawAllProfitGraphs(movies, memberships, "#profit-charts", tooltipDiv);
 }
 
 //Draw a coarse summary of some basic statistics
@@ -500,9 +500,16 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
        .append("rect")
        .attr("width",  cellSize)
        .attr("height", cellSize)
-       .attr("stroke", d => moment().isSameOrAfter(d.date, "month") ? "#002b36" : "none")
        .attr("x",      d => d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize)
        .attr("y",      d => d.date.getDay() * cellSize)
+       .attr("stroke", d => {
+         const span = spans.find(i => insideSpan(d.date, i.startDate, i.endDate));
+         if (span) {
+           return "#002b3680";
+         } else {
+           return moment().isSameOrAfter(d.date, "month") ? "#002b36" : "none";
+         }
+       })
        .attr("class",  d => {
          if (d.movies.length > 0 && !d.movies[0].isPremium) {
            return d.movies[0].service;
@@ -511,8 +518,11 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
          }
        })
        .attr("fill", d => {
+         const span = spans.find(i => insideSpan(d.date, i.startDate, i.endDate));
          if (d.movies.length > 0) {
            return d.movies[0].isPremium ? "url(#" + d.movies[0].service + "-stripe)" : "none";
+         } else if (span) {
+           return "url(#" + span.name + "-stripe)";
          } else {
            return moment().isSameOrAfter(d.date, "month") ? "#073642" : "none";
          }
@@ -944,8 +954,10 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
  //      TOOLTIP/UTILITY FUNCTIONS     //
 ////////////////////////////////////////
 
-function genPatternedFillsAndStyles(membershipData, eventData) {
+function genPatternedFillsAndStyles(membershipData, spanData) {
   var sheet = window.document.styleSheets[1];
+
+  //Add style rules for each service (and it's premium version)
   membershipData.forEach(s => {
     var colorRule = "." + s.service + " {" +
                       "fill: "  + s.color + ";" +
@@ -977,6 +989,32 @@ function genPatternedFillsAndStyles(membershipData, eventData) {
                     .attr("height", 5)
                     .html(fill);
                 });
+
+    // Add style rules for each span
+    spanData.forEach(s => {
+      var spanRule = "." + s.name + "-hatch {" +
+                       "stroke: " + s.color + ";" +
+                     "}"
+      sheet.insertRule(spanRule, sheet.cssRules.length);
+    })
+
+    //Add patterned fills for each service
+    spanData.forEach(s => {
+              const fill =
+                "<defs>" +
+                  "<pattern id=\""+ s.name + "-stripe\" patternUnits=\"userSpaceOnUse\" width=\"5\" height=\"5\">" +
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"5\" height=\"5\">" +
+                      "<rect width=\"5\" height=\"5\" fill-opacity=\"0\"/>" +
+                      "<path d=\"M0 5L5 0ZM6 4L4 6ZM-1 1L1 -1Z\" class=\"" + s.name + "-hatch\" stroke-width=\"2\"/>" +
+                    "</svg>" +
+                  "</pattern>" +
+                "</defs>";
+              d3.select("body")
+                .append("svg")
+                .attr("width",  5)
+                .attr("height", 5)
+                .html(fill);
+            });
 }
 
 function getServiceList(data) {
@@ -1181,4 +1219,12 @@ function pathMonth(t0, cellSize) {
     + "H" + w1 * cellSize + "V" + (d1 + 1) * cellSize
     + "H" + (w1 + 1) * cellSize + "V" + 0
     + "H" + (w0 + 1) * cellSize + "Z";
+}
+
+function insideSpan(day, firstDay, lastDay) {
+  day = moment(day);
+  firstDay = moment(firstDay);
+  lastDay = moment(lastDay);
+
+  return day.isSameOrAfter(firstDay) && day.isSameOrBefore(lastDay);
 }
