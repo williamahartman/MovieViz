@@ -627,7 +627,8 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
                       return {
                         date: d.date.toDate(),
                         color: d.color,
-                        description: d.description
+                        description: d.description,
+                        offset: +d.offset
                       }
                     })
      })
@@ -636,8 +637,8 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
        .attr("d", eventPath)
        .attr("fill", d => d.color)
        .attr('transform', function(d) {
-          let x = (d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize) + (cellSize / 2);
-          let y = (d.date.getDay() * cellSize) + (cellSize / 2);
+          let x = (d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize) + (cellSize / 2) + d.offset;
+          let y = (d.date.getDay() * cellSize) + (cellSize / 2) + d.offset;
           return 'translate(' + x + "," + y + ')';
        })
        .on("click", d => {
