@@ -38,9 +38,8 @@ svg {
   margin: 20px auto auto auto;
 }
 
-div.tooltip {
+.tooltip {
   position: absolute;
-  width: 320px;
   text-align: left;
   padding: 7px;
   font: 10px sans-serif;

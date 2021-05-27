@@ -485,6 +485,7 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
        let isPastYear = now.year() > year;
        let days = d3.timeDays(new Date(year, 0, 1), new Date(year + (isPastYear ? 1 : 0), isPastYear ? 0 : now.month() + 1, 1));
        return days.map(day => {
+         const span = spans.find(i => insideSpan(day, i.startDate, i.endDate));
          let movieList = [];
          let dayString = day.toISOString().substring(0, 10)
          if (dayString in moviesByDate) {
@@ -492,7 +493,8 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
          }
          return {
            date: day,
-           movies: movieList
+           movies: movieList,
+           span: span,
          };
        });
      })
@@ -503,8 +505,7 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
        .attr("x",      d => d3.timeWeek.count(d3.timeYear(d.date), d.date) * cellSize)
        .attr("y",      d => d.date.getDay() * cellSize)
        .attr("stroke", d => {
-         const span = spans.find(i => insideSpan(d.date, i.startDate, i.endDate));
-         if (span) {
+         if (d.span) {
            return "#002b3680";
          } else {
            return moment().isSameOrAfter(d.date, "month") ? "#002b36" : "none";
@@ -518,11 +519,10 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
          }
        })
        .attr("fill", d => {
-         const span = spans.find(i => insideSpan(d.date, i.startDate, i.endDate));
          if (d.movies.length > 0) {
            return d.movies[0].isPremium ? "url(#" + d.movies[0].service + "-stripe)" : "none";
-         } else if (span) {
-           return "url(#" + span.name + "-stripe)";
+         } else if (d.span) {
+           return "url(#" + d.span.name + "-stripe)";
          } else {
            return moment().isSameOrAfter(d.date, "month") ? "#073642" : "none";
          }
@@ -535,19 +535,26 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
          }
        })
        .on("mouseout", d => {
-         if (d.movies.length > 0)
-           hideTooltip(tooltip)
+         if (d.movies.length > 0 || d.span) {
+           hideTooltip(tooltip);
+         }
        })
        .on("mousemove", d => {
-         if (d.movies.length > 0)
-           updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY)
+         if (d.movies.length > 0) {
+           updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
+         } else if (d.span) {
+           updateTooltipForSpan(tooltip, d.span, d3.event.pageX, d3.event.pageY);
+         }
        })
        .on("mouseover", d => {
          if (d.movies.length > 0) {
            updateTooltipForMovie(tooltip, d.movies, d3.event.pageX, d3.event.pageY);
            showTooltip(tooltip);
+         } else if (d.span) {
+           showTooltip(tooltip, 0.8);
+           updateTooltipForSpan(tooltip, d.span, d3.event.pageX, d3.event.pageY);
          }
-       });
+       })
 
   // Months
   svg.append("g")
@@ -644,7 +651,6 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
        .on("click", d => {
          tooltipClicked = false;
          updateTooltipForEvent(tooltip, d, d3.event.pageX, d3.event.pageY);
-         tooltipClicked = true;
        })
        .on("mouseout",  () => hideTooltip(tooltip))
        .on("mousemove", d => updateTooltipForEvent(tooltip, d, d3.event.pageX, d3.event.pageY))
@@ -1101,30 +1107,60 @@ function updateTooltipForMovie(tooltip, movies, xPos, yPos) {
       "</div>";
   });
 
-  updateTooltip(tooltip, xPos, yPos, movieTooltipHtml);
+  updateTooltip(tooltip, xPos, yPos, movieTooltipHtml, 320);
 }
 
 function updateTooltipForEvent(tooltip, event, xPos, yPos) {
   let eventTooltipHtml = "";
-  eventTooltipHtml +=
-  "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
-    "style=\"width:20px;height:20px;line-height:20px;font-size:25px;text-align:center;vertical-align:middle;margin-left:auto\">" +
-    "×" +
-  "</div>";
+
+  //We want to do some semi-fancy stuff for tablets
+  const isMobile = window.matchMedia("only screen and (hover: none)").matches;
+  if (isMobile) {
+    eventTooltipHtml +=
+    "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
+      "style=\"width:20px;height:20px;line-height:20px;font-size:25px;text-align:center;vertical-align:middle;margin-left:auto\">" +
+      "×" +
+    "</div>";
+  }
 
   eventTooltipHtml +=
     "<div style=\"display:flex; flex-direction:column;margin-bottom:15px;\">" +
-      "<span style=\"font-size:1.5em;text-align:center\">" +
-        moment(event.date).format("dddd, MMMM Do YYYY") +
+      "<span style=\"font-size:15px;text-align:center\">" +
+        "<b>" + moment(event.date).format("dddd, MMMM Do YYYY") + "</b>" +
       "</span>" +
       "<div style=\"display:flex\";>" +
-        "<div style=\"margin: auto;font-size: 14px;padding-top: 20px;\">" +
+        "<div style=\"margin: auto;font-size: 13px;padding-top: 10px;padding-left: 10px\">" +
           event.description +
         "</div>" +
       "</div>" +
     "</div>";
 
-  updateTooltip(tooltip, xPos, yPos, eventTooltipHtml);
+  updateTooltip(tooltip, xPos, yPos, eventTooltipHtml, 320);
+}
+
+function updateTooltipForSpan(tooltip, span, xPos, yPos) {
+  let spanTooltipHtml = "";
+
+  //We want to do some semi-fancy stuff for tablets
+  const isMobile = window.matchMedia("only screen and (hover: none)").matches;
+  if (isMobile) {
+    spanTooltipHtml +=
+    "<div class=\"clickable-on-tooltip\" onclick=\"tooltipClicked=false;closeTooltip(d3.select('div.tooltip'))\"" +
+      "style=\"width:20px;height:20px;line-height:20px;font-size:25px;text-align:center;vertical-align:middle;margin-left:auto\">" +
+      "×" +
+    "</div>";
+  }
+
+  spanTooltipHtml +=
+    "<div style=\"display:flex; flex-direction:column;padding-left:10px\">" +
+      "<div style=\"display:flex\";>" +
+        "<div style=\"margin: auto;font-size: 12px;\">" +
+          span.description +
+        "</div>" +
+      "</div>" +
+    "</div>";
+
+  updateTooltip(tooltip, xPos, yPos, spanTooltipHtml, 175);
 }
 
 function numToStars(rating) {
@@ -1167,13 +1203,17 @@ function minsToBetterUnits(numMins) {
   return stringDescription;
 }
 
-function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
+function updateTooltip(tooltip, xPos, yPos, toolTipHtml, overrideWidth) {
   if(!tooltipClicked) {
     tooltip.html(toolTipHtml);
 
-    const tooltipWidth =   tooltip.node().clientWidth;
-    const tooltipHeight =  tooltip.node().clientHeight;
-    const documentWidth =  document.documentElement.scrollWidth;
+
+    const leftPad  = parseInt(getComputedStyle(tooltip.node()).paddingLeft);
+    const rightPad = parseInt(getComputedStyle(tooltip.node()).paddingRight);
+
+    const tooltipWidth   = overrideWidth + leftPad + rightPad;
+    const tooltipHeight  = tooltip.node().clientHeight;
+    const documentWidth  = document.documentElement.scrollWidth;
     const documentHeight = window.scrollY + window.innerHeight;
 
     var xPosCorrected = xPos;
@@ -1186,14 +1226,21 @@ function updateTooltip(tooltip, xPos, yPos, toolTipHtml) {
     }
 
     tooltip.style("left", xPosCorrected + "px")
-           .style("top",  yPosCorrected + "px");
+           .style("top",  yPosCorrected + "px")
+           .style("width", overrideWidth + "px");;
   }
 }
 
 function showTooltip(tooltip) {
-  tooltip.transition()
+  showTooltip(tooltip, 0.95);
+}
+
+function showTooltip(tooltip, opacity) {
+  if (!tooltipClicked) {
+    tooltip.transition()
          .duration(200)
-         .style("opacity", .95);
+         .style("opacity", opacity);
+  }
 }
 
 function hideTooltip(tooltip) {
