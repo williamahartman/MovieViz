@@ -1,15 +1,8 @@
 const public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTQS7hD2A-1yni8NVmyHrVaIS9gI97VHRkIIDZLv8a1e1Fy_DsoX-En6fTEabtIYI68pnnUqeeKxV_P/pub?output=csv";
-const main_sheet_gid = "2039433245";
-const memberships_sheet_gid = "42276888";
-const events_sheet_gid = "1137776008";
-const spans_sheet_gid = "504803073";
-
-let movies;
-let events;
-let spans;
-let memberships;
-let firstYear;
-let lastYear;
+const main_sheet_gid         = "2039433245";
+const memberships_sheet_gid  = "42276888";
+const events_sheet_gid       = "1137776008";
+const spans_sheet_gid        = "504803073";
 
 var tooltipClicked = false;
 
@@ -77,6 +70,8 @@ function sanitizeData(sheetContents) {
     s.numMonths = +s.numMonths;
     s.perYear = +s.perYear;
     s.numYears = +s.numYears;
+    s.startYear = s.startYear === "" ? -1 : +s.startYear;
+    s.endYear = s.endYear === "" ? -1 : +s.endYear;
     s.discounts = +s.discounts;
     s.serviceFees = +s.serviceFees;
     s.movieCosts = +s.movieCosts;
@@ -133,25 +128,26 @@ function drawGraphs(spreadsheetContents) {
                        .style("opacity", 0);
 
   //get the data we need
-  movies = spreadsheetContents.movies;
-  events = spreadsheetContents.events;
-  spans = spreadsheetContents.spans;
-  memberships = spreadsheetContents.memberships;
+  let movies = spreadsheetContents.movies;
+  let events = spreadsheetContents.events;
+  let spans = spreadsheetContents.spans;
+  let memberships = spreadsheetContents.memberships;
 
   //Generate the hatched patterned fills for each service
   genPatternedFillsAndStyles(memberships, spans);
 
   //Figure out year range
-  firstYear = d3.min(movies, d => moment(d.viewDate).year());
-  lastYear =  d3.max(movies, d => moment(d.viewDate).year());
+  let firstYear = d3.min(movies, d => moment(d.viewDate).year());
+  let lastYear =  d3.max(movies, d => moment(d.viewDate).year());
 
   //Draw Legends
   drawLegends(memberships, "#legend")
 
   //Add the options to the filter dropdown
-  d3.select("#text-stats-filter")
-    .append("option")
-    .text("All Time");
+  const filterElement = d3.select("#text-stats-filter");
+  filterElement.node().onchange = (event) => onTextStatsFilterChange(event.target.value, movies, memberships, firstYear, "#text-stats");
+  filterElement.append("option")
+               .text("All Time");
   for (let i = moment().year(); i >= firstYear ; i--) {
     d3.select("#text-stats-filter")
       .append("option")
@@ -172,14 +168,12 @@ function drawGraphs(spreadsheetContents) {
   d3.select("#show-time-scroller").node().scrollLeft=99999999;
 }
 
-function onTextStatsFilterChange(selectObject) {
-  d3.select("#text-stats")
+function onTextStatsFilterChange(filterSelection, movies, memberships, firstYear, id) {
+  d3.select(id)
     .html("");
-
-  var filterString = selectObject.value;
-  var rangeStart = filterString === "All Time" ? firstYear : parseInt(filterString);
-  var rangeEnd = filterString === "All Time" ? moment().year() : parseInt(filterString);
-  drawTextStats(movies, memberships, rangeStart, rangeEnd, "#text-stats");
+  var rangeStart = filterSelection === "All Time" ? firstYear : parseInt(filterSelection);
+  var rangeEnd = filterSelection === "All Time" ? moment().year() : parseInt(filterSelection);
+  drawTextStats(movies, memberships, rangeStart, rangeEnd, id);
 }
 
 //Draw a coarse summary of some basic statistics
@@ -191,8 +185,8 @@ function drawTextStats(data, membershipData, startYear, endYear, id) {
   var statsTable =  "<div style=\"display:flex;flex-wrap:wrap;justify-content: space-evenly;align-items: flex-start;\">";
   membershipData
     .filter(d => {
-      var startIsInRange = d.startYear === "" || (d.startYear >= startYear && d.startYear <= endYear);
-      var endIsInRange = d.endYear === "" || (d.endYear >= startYear && d.endYear <= endYear);
+      var startIsInRange = d.startYear < 0 || (d.startYear >= startYear && d.startYear <= endYear);
+      var endIsInRange = d.endYear < 0 || (d.endYear >= startYear && d.endYear <= endYear);
       return startIsInRange || endIsInRange;
     })
     .forEach(m => {

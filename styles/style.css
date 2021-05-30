@@ -15,12 +15,14 @@ svg {
 }
 
 .filter-dropdown {
+  width: 100px;
+  padding-right: 20px;
+  padding-left: 10px;
   font-size: 20px;
   text-align: right;
   color: #d33682;
   background-color: #002b36;
   border: none;
-  padding-left: 15px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -29,6 +31,9 @@ svg {
 .filter-dropdown-div:after {
   content: '▼';
   font-size: 15px;
+  position: relative;
+  left: -20px;
+  pointer-events: none;
 }
 
 .section {
