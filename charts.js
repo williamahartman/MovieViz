@@ -4,6 +4,13 @@ const memberships_sheet_gid = "42276888";
 const events_sheet_gid = "1137776008";
 const spans_sheet_gid = "504803073";
 
+let movies;
+let events;
+let spans;
+let memberships;
+let firstYear;
+let lastYear;
+
 var tooltipClicked = false;
 
 const parseSheet = gid => new Promise(resolve => {
@@ -126,23 +133,33 @@ function drawGraphs(spreadsheetContents) {
                        .style("opacity", 0);
 
   //get the data we need
-  var movies = spreadsheetContents.movies;
-  var events = spreadsheetContents.events;
-  var spans = spreadsheetContents.spans;
-  var memberships = spreadsheetContents.memberships;
+  movies = spreadsheetContents.movies;
+  events = spreadsheetContents.events;
+  spans = spreadsheetContents.spans;
+  memberships = spreadsheetContents.memberships;
 
   //Generate the hatched patterned fills for each service
   genPatternedFillsAndStyles(memberships, spans);
 
   //Figure out year range
-  const firstYear = d3.min(movies, d => moment(d.viewDate).year());
-  const lastYear =  d3.max(movies, d => moment(d.viewDate).year());
+  firstYear = d3.min(movies, d => moment(d.viewDate).year());
+  lastYear =  d3.max(movies, d => moment(d.viewDate).year());
 
   //Draw Legends
   drawLegends(memberships, "#legend")
 
+  //Add the options to the filter dropdown
+  d3.select("#text-stats-filter")
+    .append("option")
+    .text("All Time");
+  for (let i = moment().year(); i >= firstYear ; i--) {
+    d3.select("#text-stats-filter")
+      .append("option")
+      .text(i);
+  }
+
   //Draw Charts
-  drawTextStats(movies, memberships, firstYear, "#text-stats");
+  drawTextStats(movies, memberships, firstYear, moment().year(), "#text-stats", d => true);
   drawRatingsGraph(movies, "#ratings-graph", 435, tooltipDiv);
   drawCalendarChart(movies, events, spans, "#calendar-graph", d3.range(firstYear, lastYear + 1), 885, 136, 15, tooltipDiv);
   drawDayOfWeekGraph(movies, "#day-of-week-graph", 385, tooltipDiv);
@@ -150,41 +167,77 @@ function drawGraphs(spreadsheetContents) {
   drawDateDiffBarGraph(movies, "#date-diff-graph", 885, tooltipDiv);
   drawTheaterGraph(movies, "#theater-graph", 885, tooltipDiv);
   drawAllProfitGraphs(movies, memberships, "#profit-charts", tooltipDiv);
+
+  //Dumb little hack to improve the one chart on mobile...
+  d3.select("#show-time-scroller").node().scrollLeft=99999999;
+}
+
+function onTextStatsFilterChange(selectObject) {
+  d3.select("#text-stats")
+    .html("");
+
+  var filterString = selectObject.value;
+  var rangeStart = filterString === "All Time" ? firstYear : parseInt(filterString);
+  var rangeEnd = filterString === "All Time" ? moment().year() : parseInt(filterString);
+  drawTextStats(movies, memberships, rangeStart, rangeEnd, "#text-stats");
 }
 
 //Draw a coarse summary of some basic statistics
-function drawTextStats(data, membershipData, startYear, id) {
+function drawTextStats(data, membershipData, startYear, endYear, id) {
+  var filterFunction = d => {
+    return d.viewDate.year() >= startYear && d.viewDate.year() <= endYear;
+  }
+
   var statsTable =  "<div style=\"display:flex;flex-wrap:wrap;justify-content: space-evenly;align-items: flex-start;\">";
-  membershipData.forEach(m => {
-    const numFromService = data.filter(d => d.service === m.service).length;
-    statsTable +=
-      "<div style=\"width:265px;flex-grow:1;\">" +
-        "<table>" +
-          "<tbody>" +
-            "<tr>" +
-              "<td class=\"" + m.service + "\" style=\"font-size:25px;text-align:right;50px;\">" + numFromService + "</td>" +
-              "<td style=\"padding:10px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
-            "</tr>" +
-          "</tbody>" +
-        "</table>" +
-      "</div>";
-  });
+  membershipData
+    .filter(d => {
+      var startIsInRange = d.startYear === "" || (d.startYear >= startYear && d.startYear <= endYear);
+      var endIsInRange = d.endYear === "" || (d.endYear >= startYear && d.endYear <= endYear);
+      return startIsInRange || endIsInRange;
+    })
+    .forEach(m => {
+    const numFromService = data.filter(filterFunction).filter(d => d.service === m.service).length;
+      statsTable +=
+        "<div style=\"width:265px;flex-grow:1;\">" +
+          "<table>" +
+            "<tbody>" +
+              "<tr>" +
+                "<td class=\"" + m.service + "\" style=\"font-size:25px;text-align:right;50px;\">" + numFromService + "</td>" +
+                "<td style=\"padding:10px;\">" + (numFromService === 1 ? m.textStatUnitSingle : m.textStatUnitPlural) + " " + m.textStatDescription + "</td>" +
+              "</tr>" +
+            "</tbody>" +
+          "</table>" +
+        "</div>";
+    });
+  statsTable += "<div style=\"width:265px;flex-grow:1;\"></div>"; //Filler to improve things if we end on a row with two items
   statsTable += "</div>";
 
-  const numMoviesTotal = data.length;
-  const numMoviesThisYear = data.filter(d => d.viewDate.year() == moment().year()).length;
-  const numMinutesInMovies = data.reduce((acc, n) => acc + n.runTime, 0);
+  const numMoviesTotal = data.filter(filterFunction).length;
+  const numMoviesThisYear = data.filter(filterFunction).filter(d => d.viewDate.year() == endYear).length;
+  const numMinutesInMovies = data.filter(filterFunction).reduce((acc, n) => acc + n.runTime, 0);
+  var countTable;
+  if (startYear == endYear) {
+    countTable =
+    "<div style=\"min-width=420px;margin-bottom:15px;text-align:center;\">" +
+      "<span style=\"color:#fdf6e3;font-size:30px;\">" + numMoviesThisYear + "</span>" +
+      "<span style=\"font-size:20px\"> " + (numMoviesThisYear == 1 ? "movie" : "movies") + " in " + endYear + "</span>" +
+    "</div>";
+  } else {
+    countTable =
+    "<table width=100%>" +
+      "<tr>" +
+        "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesThisYear + "</td>" +
+        "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesThisYear == 1 ? "movie" : "movies") + " in theaters this year (so far...)</td>" +
+        "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesTotal + "</td>" +
+        "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
+      "</tr>" +
+    "</table>";
+  }
+
   d3.select(id)
     .append("div")
     .html(
-      "<table width=100%>" +
-        "<tr>" +
-          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesThisYear + "</td>" +
-          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesThisYear == 1 ? "movie" : "movies") + " in theaters this year (so far...)</td>" +
-          "<td style=\"color:#fdf6e3;font-size:30px;text-align:right;padding-bottom:15px;width:50px;\">" + numMoviesTotal + "</td>" +
-          "<td style=\"font-size:20px;padding-left:15px;padding-bottom:15px\">" + (numMoviesTotal == 1 ? "movie" : "movies") + " in theaters since 1/1/" + startYear + "</td>" +
-        "</tr>" +
-      "</table>" +
+      countTable +
       "<div style=\"min-width=420px;margin-bottom:30px;text-align:center;\">" +
         "<span style=\"font-size:20px\">For a total of </span>" +
         "<span style=\"color:#fdf6e3;font-size:24px;\">" + minsToBetterUnits(numMinutesInMovies) + "</span>" +
@@ -623,7 +676,7 @@ function drawCalendarChart(data, events, spans, id, yearRange, width, height, ce
   // Add event info over days
   var symbolGenerator = d3.symbol()
     .type(d3.symbolCircle)
-    .size(30);
+    .size(40);
   var eventPath = symbolGenerator();
 
   svg.append("g")

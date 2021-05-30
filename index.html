@@ -42,8 +42,16 @@
         </ul>
     </p>
   </div>
-  <div id="text-stats" class="section-small">
-    <h2>General Statistics</h2>
+  <div class="section-small">
+    <h2>
+      <div style="display:flex">
+        General Statistics
+        <div class="filter-dropdown-div">
+          <select id="text-stats-filter" class="filter-dropdown" onchange="onTextStatsFilterChange(this)"></select>
+        </div>
+      </div>
+    </h2>
+    <div id="text-stats"></div>
   </div>
   <div class="section">
     <h2>Movies by Rating</h2>
@@ -71,7 +79,7 @@
   <div class="section">
     <h2>Movies by Showtime</h2>
     <div id="legend"></div>
-    <div class="scroller">
+    <div id="show-time-scroller" class="scroller">
       <svg id="show-time-graph"></svg>
     </div>
     <p class="chart-caption">
