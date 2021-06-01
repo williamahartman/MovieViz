@@ -20,9 +20,11 @@ svg {
   padding-left: 10px;
   font-size: 20px;
   text-align: right;
+  text-align-last: right;
   color: #d33682;
   background-color: #002b36;
   border: none;
+  outline: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
