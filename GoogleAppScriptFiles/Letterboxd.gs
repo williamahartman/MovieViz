@@ -1,6 +1,6 @@
 function updateRatings() {
   var ratingsData = getRatings();
-    
+
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheets()[0];
   var range = sheet.getRange("$D$2:$P1000");
@@ -15,7 +15,7 @@ function updateRatings() {
         return;
       }
     });
-    
+
     if(rating) {
       var currentRow = i + 2;
       sheet.getRange("P" + currentRow).setValue(rating.rating);
@@ -36,7 +36,7 @@ function getRatings() {
   var userId    = scriptProperties.getProperty('LETTERBOXD_USER_ID');
 
   var letterboxdData = [];
-  
+
   //Go through the cursored list of films. One extra request needs to be made.
   var perPage = 100;
   var cursor = 0;
@@ -47,7 +47,7 @@ function getRatings() {
               "&memberRelationship=Watched" +
               "&sort=ReleaseDateLatestFirst" +
               "&perPage=" + perPage +
-              "&cursor=start=" + cursor + 
+              "&cursor=start=" + cursor +
               "&member=" + userId;
     var signedUrl = signLetterboxdUrl(url, apiKey, apiSecret, "GET", "");
     var response = UrlFetchApp.fetch(signedUrl);
@@ -55,7 +55,7 @@ function getRatings() {
     letterboxdData = letterboxdData.concat(reqResults);
     cursor += perPage;
   } while (reqResults.length > 0);
-  
+
   //Filter it down to the just the relevant information
   var ratings = []
   letterboxdData.forEach(function(i) {
@@ -66,7 +66,7 @@ function getRatings() {
         return;
       }
     });
-    
+
     if(imdbId != null) {
       ratings.push({
         imdbId: imdbId,
@@ -81,22 +81,11 @@ function getRatings() {
 function signLetterboxdUrl(unsignedUrl, apiKey, apiSecret, method, body) {
   var timestamp = Math.floor((new Date()).getTime()/1000);
   var nonce     = Utilities.getUuid();
-  var url = unsignedUrl + "&apikey=" + apiKey + "&timestamp=" + timestamp + "&nonce=" + nonce;
-  
-  var signatureString = method + "\u0000" + url + "\u0000" + body;
-  var signature = hmacSha256(signatureString, apiSecret);
-  var signedUrl = url + "&signature=" + signature;
-  
-  return signedUrl;
-}
+  var urlToSign = unsignedUrl + "&apikey=" + apiKey + "&timestamp=" + timestamp + "&nonce=" + nonce;
+  var toSign    = method + "\u0000" + urlToSign + "\u0000" + body;
 
-function hmacSha256(value, key) {
-  var signatureBytes = Utilities.computeHmacSha256Signature(value, key);
-  var signature = signatureBytes.reduce(function(acc, val) {
-    if (val < 0) val += 256;
-    var byteStr = val.toString(16);
-    if (byteStr.length == 1) byteStr = '0'+ byteStr;
-    return acc + byteStr;
-  }, "")
-  return signature;
+  var signature = CryptoJS.HmacSHA256(toSign, apiSecret);
+  var signedUrl = urlToSign + "&signature=" + signature;
+
+  return signedUrl;
 }

@@ -20,17 +20,19 @@ The contents of the file `Omdb.gs` need to attached to a trigger on the spreadsh
 
 To add a custom script to a spreadsheet, click `Tools -> Script Editor`. Make a file and copy over the contents of the script in this repo. Go to `Edit -> Current project's triggers` and add a new trigger with the values `updateData`, `From spreadsheet`, and `On form submit`. I made a form for easier data entry, if you're entering your data some other way, you might want to use some other trigger.
 
-For the script to work, you'll need to add an OMDb API key under the "Script properties" (under `File -> Project properties`) with the key `OMDB_API_KEY`. These keys are available [over here](http://www.omdbapi.com/apikey.aspx).
+For the script to work, you'll need to add an OMDb API key under the "Script properties" (under `File -> Project properties` — you can only set these the old editor UI, so opt out of the new one) with the key `OMDB_API_KEY`. These keys are available [over here](http://www.omdbapi.com/apikey.aspx).
 
 ## Setting up Letterboxd
 
-Same as with OMDb, if you want to pull reviews from your Letterboxd account, you'll need to add the contents of the `Letterboxd.gs` file on a trigger. I have this one run nightly instead of when I submit the form. I tend to enter data while I'm waiting for the movie to start -- and I certainly wouldn't rate something before I saw it!
+Same as with OMDb, if you want to pull reviews from your Letterboxd account, you'll need to add the contents of the `Letterboxd.gs` file on a trigger. You'll also need to add the `Crypto.gs` file to your AppScript project. I have this one run nightly instead of when I submit the form. I tend to enter data while I'm waiting for the movie to start — and I certainly wouldn't rate something before I saw it!
 
 You'll need a Letterboxd API key and secret for this to work. They list an email address [over here](https://letterboxd.com/api-beta/), but they weren't super responsive for me. You might have to get a little creative to get the info you need...
 
+They changed these at some point semi-recently. If you need a little hint, both the API key and secret are now 64 char hex strings. I'm sure this is all very against the rules, so like... buy a Letterboxd pro subscription to make up for it maybe?
+
 Just like OMDb, you'll need some stuff under the "Script properties":
 - Your API key under `LETTERBOXD_API_KEY`
-- Your API secret under `LETTERBOXD_API_KEY`
+- Your API secret under `LETTERBOXD_API_SECRET`
 - Your Letterboxd user ID under `LETTERBOXD_USER_ID`
 
 Of course, if this stuff is too much of a pain, you can just enter your ratings in the spreadsheet manually. If you aren't already a Letterboxd user, this isn't a huge loss.
