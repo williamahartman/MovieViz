@@ -330,7 +330,7 @@ function drawRatingsGraph(data, id, width, tooltip) {
      .attr("y", d => calculatedHeight - y(d.ratingsGraphPos + 1))
      .attr("x", d => x(d.rating))
      .attr("width", x.bandwidth())
-     .attr("height", () => y(1) - 0.5)
+     .attr("height", () => y(1) - 1)
      .on("click", d => {
        tooltipClicked = false;
        updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
@@ -395,7 +395,7 @@ function drawDayOfWeekGraph(data, id, width, tooltip) {
      .attr("y", d => calculatedHeight - y(d.dayGraphPos + 1))
      .attr("x", d => x(d.viewDate.day()))
      .attr("width", x.bandwidth())
-     .attr("height", () => y(1) - 0.5)
+     .attr("height", () => y(1) - 1)
      .on("click", d => {
         tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
@@ -487,7 +487,7 @@ function drawShowTimeGraph(data, id, width, tooltip) {
       .attr("y", d => calculatedHeight - y(d.showtimeGraphPos + 1))
       .attr("x", d => x(d.x0))
       .attr("width", d => x(d.x1) - x(d.x0) - 1)
-      .attr("height", () => y(1) - 0.5)
+      .attr("height", () => y(1) - 1)
       .on("click", d => {
         tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
@@ -839,7 +839,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
    .attr("class", "xaxis")
    .attr("transform", "translate(0," + calculatedHeight + ")")
    .call(d3.axisBottom(x)
-           .ticks(maxVisits)
+           .ticks(maxVisits / 5)
            .tickSizeInner([-calculatedHeight]));
 
   //Y-axis
@@ -858,7 +858,7 @@ function drawTheaterGraph(data, id, width, tooltip) {
      .attr("x", d => x(d.theaterGraphPos) + 0.25)
      .attr("y", d => y(d.theater))
      .attr("height", y.bandwidth())
-     .attr("width", () => x(1) - 0.5)
+     .attr("width", () => x(1) - 1)
      .on("click", d => {
       tooltipClicked = false;
       updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
@@ -879,11 +879,14 @@ function drawAllProfitGraphs(data, membershipData, id, tooltip) {
   membershipData.filter(s => s.showProfitGraph)
                 .sort((s1, s2) => s2.isActive - s1.isActive)
                 .forEach(s => {
+                  preppedData = prepDataForProfitGraph(data, s.service);
+                  wasProfitable = preppedData.profitData.value > s.totalSpent;
+
                   profitGraphsDiv.append("div")
                     .attr("class", "section")
                     .attr("id", s.service + "-profit-graph-section")
                     .append("h2")
-                    .text(s.serviceNameSimple + " Profitability");
+                    .text(s.serviceNameSimple + " Break-even");
 
                   d3.select("#" + s.service + "-profit-graph-section")
                     .append("div")
@@ -892,7 +895,16 @@ function drawAllProfitGraphs(data, membershipData, id, tooltip) {
                     .attr("id", s.service + "-profit-graph");
 
                   var caption = "";
-                  caption += s.serviceNameSimple + " becomes profitable after the bar clears the hatched background.";
+
+                  if (s.isActive) {
+                    if (wasProfitable) {
+                      caption += s.serviceNameSimple + " started saving me money after the bar passed beyond the hatched background.";
+                    } else {
+                      caption += s.serviceNameSimple + " will start saving me money if the bar passes beyond the hatched background.";
+                    }
+                  } else {
+                    caption += s.serviceNameSimple + (wasProfitable? " started saving me money after" : " would have saved me money if") + " the bar passed beyond the hatched background.";
+                  }
                   caption += s.allowsPremium ? " Premium showings have hatched bars." : "";
 
                   d3.select("#" + s.service + "-profit-graph-section")
@@ -900,18 +912,11 @@ function drawAllProfitGraphs(data, membershipData, id, tooltip) {
                     .attr("class", "chart-caption")
                     .text(caption);
 
-                  drawProfitGraph(data, "#" + s.service + "-profit-graph", s.service, s.serviceNameSimple, s.totalSpent, s.movieFees > 0, 885, 130, tooltip)
+                  drawProfitGraph(preppedData, "#" + s.service + "-profit-graph", s.service, s.serviceNameSimple, s.totalSpent, s.movieFees > 0, 885, 130, tooltip)
                 });
 }
 
-//Draw a chart of profits
-function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height, tooltip) {
-  const svg = d3.select(id),
-        margin = {top: 20, right: 20, bottom: 35, left: 20},
-        chartWidth = width - margin.left - margin.right,
-        chartHeight = height - margin.top - margin.bottom;
-
-  //Data Processing
+function prepDataForProfitGraph(data, service) {
   const filteredData = data.filter(d => d.service === service)
                            .filter(d => d.viewDate.isValid());
   filteredData.sort((a, b) => moment(a.viewDate).unix() - moment(b.viewDate).unix())
@@ -921,12 +926,24 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
     d.profitGraphPos = receivedAmount;
     receivedAmount += d.price;
   });
-  const profitData = [{service: service, value: receivedAmount}];
+
+  result = {};
+  result.profitData = {service: service, value: receivedAmount};
+  result.perMovieData = filteredData;
+  return result;
+}
+
+//Draw a chart of profits
+function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFees, width, height, tooltip) {
+  const svg = d3.select(id),
+        margin = {top: 20, right: 20, bottom: 35, left: 20},
+        chartWidth = width - margin.left - margin.right,
+        chartHeight = height - margin.top - margin.bottom;
 
   //Scales
   const x = d3.scaleLinear().range([0, chartWidth]);
   const y = d3.scaleBand().range([chartHeight, 0]);
-  x.domain([0, receivedAmount > targetAmount ? receivedAmount * 1.333 : targetAmount * 1.333]);
+  x.domain([0, data.profitData.value > targetAmount ? data.profitData.value * 1.2 : targetAmount * 1.2]);
   y.domain([service]).padding(0.25);
 
   //SVG setup
@@ -947,7 +964,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
 
   //Hatched background
   g.selectAll(".bar")
-      .data(profitData)
+      .data([data.profitData])
     .enter()
       .append("rect")
       .attr("fill",   () => "url(#background-stripe)")
@@ -958,7 +975,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
 
   //Price bars
   g.selectAll(".bar")
-      .data(filteredData)
+      .data(data.perMovieData)
     .enter()
       .append("rect")
       .attr("fill", d => "url(#" + d.service + "-stripe)")
@@ -967,7 +984,7 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
       .attr("x",       d => x(d.profitGraphPos))
       .attr("height",  y.bandwidth())
       .attr("y",       d => y(d.service))
-      .attr("width",   d => x(d.price) - 0.5)
+      .attr("width",   d => x(d.price) - 1)
       .on("click", d => {
         tooltipClicked = false;
         updateTooltipForMovie(tooltip, [d], d3.event.pageX, d3.event.pageY);
@@ -982,24 +999,24 @@ function drawProfitGraph(data, id, service, serviceName, targetAmount, includeFe
 
   //Text at end of bar
   g.selectAll(".text")
-    .data(profitData)
+    .data([data.profitData])
     .enter()
       .append("text")
       .attr("fill",  "#93a1a1")
       .attr("x", d => x(d.value) + 10)
       .attr("y", d => y(d.service) + (y.bandwidth() / 3))
       .attr("font-size", 12)
-      .text(d => d3.format("$,.2f")(d.value) + " in tickets from " + serviceName);
+      .text(d => d3.format("$,.2f")(d.value) + " worth of tickets");
 
   g.selectAll(".text")
-    .data(profitData)
+    .data([data.profitData])
     .enter()
       .append("text")
       .attr("fill",  "#93a1a1")
       .attr("x", d => x(d.value) + 10)
       .attr("y", d => y(d.service) + (y.bandwidth() * 2.5 / 3))
       .attr("font-size", 10)
-      .text(d => "(" + d3.format("$,.2f")(targetAmount / filteredData.length) + " per ticket)");
+      .text(d => "(" + d3.format("$,.2f")(targetAmount / data.perMovieData.length) + " per ticket)");
 }
 
 
